@@ -4,8 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken");
-
-const JWT_SECRET = "basketball-secret";
+require("dotenv").config();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const mongoose = require("mongoose");
 
@@ -18,7 +18,7 @@ app.use(express.json());
 async function connectDB() {
   try {
     // 1. Trigger the connection
-    await mongoose.connect("mongodb+srv://tmddnzld_db_user:CsiIhgdXV2DpETOw@cluster0.xaudt1h.mongodb.net/basketballDB");
+    await mongoose.connect(process.env.MONGODB_URI);
     
     // 2. FORCE a real request to the actual database server
     await mongoose.connection.db.admin().command({ ping: 1 });
