@@ -26,6 +26,8 @@ function App() {
 
   const [user, setUser] = useState(null);
 
+  
+
   let data;
 
   async function handleAnalyze() {
@@ -124,18 +126,23 @@ function App() {
   }
 
   async function loadUser() {
-
     try {
+
+      setLoading(true);
 
       const data = await getCurrentUser();
 
       setUser(data);
 
     } catch(error) {
-      
+
         localStorage.removeItem("token");
         setUser(null);
 
+    } finally {
+
+        setLoading(false);
+        
     }
   }
 
