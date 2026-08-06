@@ -1,8 +1,12 @@
 export async function analyzePlayer(player) {
+
+    const token = localStorage.getItem("token");
+
     const res = await fetch(`http://localhost:3000/analyze`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
             //name: player.name,

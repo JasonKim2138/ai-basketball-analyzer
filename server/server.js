@@ -39,7 +39,13 @@ const playerSchema = new mongoose.Schema(
 
   grade: String,
 
-  message: String
+  message: String,
+  
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  }
 
   },
 
@@ -228,18 +234,21 @@ app.get("/history", auth, async(req, res) => {
   
   token = req.headers.authorization
   
-  const history = await PlayerAnalysis.find();
+  const history = await PlayerAnalysis.find({userId: req.user.userId});
 
   res.json(history);
 });
 
-app.post("/analyze", async (req, res) => {
+app.post("/analyze", auth, async (req, res) => {
 
   const player = req.body;
 
   const analysis = analyzePlayer(player);
 
-  const newAnalysis = new PlayerAnalysis(analysis);
+    const newAnalysis = new PlayerAnalysis({
+    ...analysis,
+    userId: req.user.userId
+  });
 
   await newAnalysis.save();
 
@@ -279,7 +288,7 @@ function analyzePlayer(player) {
     player: player,
     starter,
     grade,
-    message
+    message,
   });
 }
 
