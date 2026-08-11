@@ -2,7 +2,7 @@ export async function analyzePlayer(player) {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/analyze`, {
+    const res = await fetch(`http://localhost:3000/player/analyze`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -26,7 +26,7 @@ export async function loadPlayers() {
 
     console.log("token ", token);
 
-    const res = await fetch("http://localhost:3000/history", {
+    const res = await fetch("http://localhost:3000/player/history", {
 
         headers: {
             authorization: `Bearer ${token}`
@@ -39,20 +39,32 @@ export async function loadPlayers() {
 }
 
 export async function deleteAnalysis(id) {
-    const res = await fetch(`http://localhost:3000/history/${id}`, 
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`http://localhost:3000/player/history/${id}`, 
         {
-            method: "DELETE"
+            method: "DELETE",
+
+            headers: {
+            authorization: `Bearer ${token}`
+            }
+
         });
     return await res.json();
 };
 
 export async function updateAnalysis(id, updatedData) {
-    const res = await fetch(`http://localhost:3000/history/${id}`, 
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`http://localhost:3000/player/history/${id}`, 
         {
             method: "PUT",
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                authorization: `Bearer ${token}`
             },
 
             body: JSON.stringify(updatedData)
@@ -68,7 +80,7 @@ export async function searchPlayers(name, grade) {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/players?${query}`, {
+    const res = await fetch(`http://localhost:3000/player/players?${query}`, {
             headers: {
                 authorization: `Bearer ${token}`
             }
@@ -79,7 +91,7 @@ export async function searchPlayers(name, grade) {
 }
 
 export async function userSignup(email, password) {
-    const res = await fetch(`http://localhost:3000/signup`, {
+    const res = await fetch(`http://localhost:3000/auth/signup`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -98,7 +110,7 @@ export async function userSignup(email, password) {
 }
 
 export async function userLogin(email, password) {
-    const res = await fetch(`http://localhost:3000/login`, {
+    const res = await fetch(`http://localhost:3000/auth/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -120,7 +132,7 @@ export async function getCurrentUser() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-        "http://localhost:3000/me",
+        "http://localhost:3000/auth/me",
         {
             headers: {
                 authorization: `Bearer ${token}`

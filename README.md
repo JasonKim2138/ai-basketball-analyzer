@@ -249,6 +249,7 @@ Day 16 — Protected Routes
     }
 
 Day 17 Summary — User Ownership & Authorization
+
     Learned:
 
     Make your app support multiple users safely.
@@ -264,3 +265,98 @@ Day 17 Summary — User Ownership & Authorization
     
     5. Error codes: 
         401 Unauthorized, 403 Forbidden
+
+Day 18 — Professional Backend Architecture & Modularity
+
+    Learned:
+
+    How to organize backend code by responsibility instead of putting everything inside server.js.
+
+    Your backend went from:
+
+    server.js
+    ├── Database
+    ├── Models
+    ├── Middleware
+    ├── Authentication
+    ├── Routes
+    ├── Controllers/logic
+    └── Basketball logic
+
+    to:
+
+    server/
+    ├── config/
+    │   └── db.js
+    │
+    ├── controllers/
+    │   ├── authController.js
+    │   └── playerController.js
+    │
+    ├── middleware/
+    │   └── auth.js
+    │
+    ├── models/
+    │   ├── User.js
+    │   └── Player.js
+    │
+    ├── routes/
+    │   ├── authRoutes.js
+    │   └── playerRoutes.js
+    │
+    ├── services/
+    │   └── playerAnalysisService.js
+    │
+    ├── .env
+    ├── .gitignore
+    └── server.js
+
+    require() + module.exports
+
+    You learned that CommonJS modules work like:
+
+    File A
+    ↓
+    module.exports
+    ↓
+    File B
+    ↓
+    require()
+
+    models/
+
+    You separated:
+
+    models/
+    ├── User.js
+    └── Player.js
+
+    Models are responsible for:
+
+    Defining how data is structured and interacting with MongoDB.
+
+    middleware/
+
+    You moved authentication into:
+
+    middleware/auth.js
+    
+    It answers:
+
+    "Is this request authenticated?"
+
+    services/
+
+    Its responsibility:
+
+    Basketball/business logic.
+
+    routes/
+
+    Routes answer:
+
+    "Which endpoint is being requested, and which function should handle it?"
+
+    controllers/
+
+    Controllers contain the actual request/response logic.
