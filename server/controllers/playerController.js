@@ -29,7 +29,7 @@ async function getPlayers(req, res) {
 async function getHistory(req, res) {
   const history = await Player.find({
     userId: req.user.userId
-  });
+  }).sort({ createdAt: -1 });
 
   res.json(history);
 }
