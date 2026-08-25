@@ -360,3 +360,80 @@ Day 18 — Professional Backend Architecture & Modularity
     controllers/
 
     Controllers contain the actual request/response logic.
+
+Day 20 — Backend Robustness
+
+    Learned:
+
+    1. Backend validation
+
+    You learned that the backend should never blindly trust frontend data.
+
+    You created a validator to check:
+
+    Player name
+    Points
+    Assists
+    Rebounds
+
+    Invalid data returns:
+
+    res.status(400).json({
+    message: "Invalid player data",
+    errors
+    });
+
+    2. Frontend error handling
+
+    You learned that fetch() doesn't automatically throw for HTTP 400/500.
+
+    So your API function checks:
+
+    if (!response.ok) {
+    throw new Error(data.message);
+    }
+
+    Then React handles it with:
+
+    try {
+    // request
+    } catch (error) {
+    setError(error.message);
+    } finally {
+    setLoading(false);
+    }
+    
+    3. Safe updates
+
+    You changed your update approach so users can modify:
+
+    name
+    points
+    assists
+    rebounds
+
+    while the backend controls:
+
+    starter
+    grade
+    message
+    userId
+
+    You also learned partial updates—changing only points shouldn't erase the other stats.
+
+    4. Centralized error handling
+
+    You created:
+
+    middleware/errorHandler.js
+
+    and learned:
+
+    next(error);
+
+    passes unexpected errors from your controller to the centralized error middleware.
+
+    Most importantly, you learned the difference between:
+
+    400 → expected/handled client problem
+    500 → unexpected server problem

@@ -1,4 +1,8 @@
 const Player = require("../models/Player");
+const {
+  validatePlayer,
+  validatePlayerUpdate
+} = require("../validators/playerValidator");
 
 const {
   analyzePlayer
@@ -34,19 +38,35 @@ async function getHistory(req, res) {
   res.json(history);
 }
 
-async function createAnalysis(req, res) {
-  const player = req.body;
+async function createAnalysis(req, res, next) {
+  try {
+    
+    const player = req.body;
 
-  const analysis = analyzePlayer(player);
+    const errors = validatePlayer(player);
 
-  const newAnalysis = new Player({
-    ...analysis,
-    userId: req.user.userId
-  });
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        message: "Invalid player data",
+        errors
+      });
+    }
+    const analysis = analyzePlayer(player);
 
-  await newAnalysis.save();
+    const newPlayer = new Player({
+      ...analysis,
+      userId: req.user.userId
+    });
 
-  res.json(newAnalysis);
+    await newPlayer.save();
+
+    res.status(201).json(newPlayer);
+
+  } catch (error) {
+
+    next(error);
+
+  }
 }
 
 async function deleteAnalysis(req, res) {
@@ -69,30 +89,59 @@ async function deleteAnalysis(req, res) {
   });
 }
 
-async function updateAnalysis(req, res) {
+async function updatePlayer(req, res) {
   const id = req.params.id;
 
-  const updatedData = req.body;
+  const player = await Player.findOne({
+    _id: id,
+    userId: req.user.userId
+  });
 
-  const updatedAnalysis =
-    await Player.findOneAndUpdate(
-      {
-        _id: id,
-        userId: req.user.userId
-      },
-      updatedData,
-      {
-        returnDocument: "after"
-      }
-    );
-
-  if (!updatedAnalysis) {
+  if (!player) {
     return res.status(404).json({
-      message: "Analysis not found"
+      message: "Player not found"
     });
   }
 
-  res.json(updatedAnalysis);
+  const updatedPlayerData = {
+    ...player.player,
+
+    ...(req.body.name !== undefined && {
+      name: req.body.name
+    }),
+
+    ...(req.body.points !== undefined && {
+      points: req.body.points
+    }),
+
+    ...(req.body.assists !== undefined && {
+      assists: req.body.assists
+    }),
+
+    ...(req.body.rebounds !== undefined && {
+      rebounds: req.body.rebounds
+    })
+  };
+
+  const errors = validatePlayerUpdate(updatedPlayerData);
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({
+      message: "Invalid player data",
+      errors
+    });
+  }
+
+  const analysis = analyzePlayer(updatedPlayerData);
+
+  player.player = updatedPlayerData;
+  player.starter = analysis.starter;
+  player.grade = analysis.grade;
+  player.message = analysis.message;
+
+  await player.save();
+
+  res.json(player);
 }
 
 module.exports = {
@@ -100,5 +149,5 @@ module.exports = {
   getHistory,
   createAnalysis,
   deleteAnalysis,
-  updateAnalysis
+  updatePlayer
 };

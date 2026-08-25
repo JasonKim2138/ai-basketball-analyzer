@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PlayerForm from "./components/PlayerForm";
 import ResultList from "./components/ResultList";
-import { analyzePlayer, deleteAnalysis, updateAnalysis, loadPlayers, searchPlayers, userSignup, userLogin, getCurrentUser } from "./services/api";
+import { analyzePlayer, deleteAnalysis, updatePlayer, loadPlayers, searchPlayers, userSignup, userLogin, getCurrentUser } from "./services/api";
 
 function App() {
   const [player, setPlayer] = useState({
@@ -30,20 +30,20 @@ function App() {
 
   let data;
 
-  async function handleAnalyze() {
+async function handleAnalyze() {
+  setLoading(true);
+  setError("");
 
-    setLoading(true);
+  try {
+    const data = await analyzePlayer(player);
 
-    try {
-      data = await analyzePlayer(player);
-      
-    } catch (error) {
-      setError("Server failed");
-    }
     setResults([...results, data]);
+  } catch (error) {
+    setError(error.message);
+  } finally {
     setLoading(false);
-
   }
+}
 
   async function loadHistory() {
 
@@ -61,16 +61,16 @@ function App() {
 
   }
 
-  async function handleUpdate(id) {
+async function handleUpdate(id, updatedData) {
 
-    await updateAnalysis(id, {
-      grade: "S+",
-      message: "GOAT STATUS"
-    });
-
-    loadHistory();
-
+  try {
+      await updatePlayer(id, updatedData);
+      loadHistory();
+  } catch (error) {
+      setError(error.message);
   }
+
+}
 
   async function handleSearch(searchName, gradeFilter) {
 

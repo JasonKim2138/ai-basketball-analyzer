@@ -16,8 +16,14 @@ export async function analyzePlayer(player) {
             rebounds: Number(player.rebounds)
         })
         });
-        
-        return await res.json();
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.message || "Request failed");
+    }
+
+    return data;
 };
 
 export async function loadPlayers() {
@@ -54,7 +60,7 @@ export async function deleteAnalysis(id) {
     return await res.json();
 };
 
-export async function updateAnalysis(id, updatedData) {
+export async function updatePlayer(id, updatedData) {
 
     const token = localStorage.getItem("token");
 

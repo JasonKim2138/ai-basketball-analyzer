@@ -7,7 +7,7 @@ const {
   getHistory,
   createAnalysis,
   deleteAnalysis,
-  updateAnalysis
+  updatePlayer
 } = require("../controllers/playerController");
 
 const router = express.Router();
@@ -20,6 +20,6 @@ router.post("/analyze", auth, createAnalysis);
 
 router.delete("/history/:id", auth, deleteAnalysis);
 
-router.put("/history/:id", auth, updateAnalysis);
+router.put("/history/:id", auth, updatePlayer);
 
 module.exports = router;
