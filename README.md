@@ -437,3 +437,49 @@ Day 20 — Backend Robustness
 
     400 → expected/handled client problem
     500 → unexpected server problem
+
+Day 21 — REST API Design & Authorization
+
+    Learned:
+
+    Refactored API endpoints to follow a resource-based REST structure:
+
+    POST /player → create a player
+
+    GET /player → retrieve players
+
+    PUT /player/:id → update a player
+
+    DELETE /player/:id → delete a player
+
+    Learned how query parameters work:
+
+    /player?name=Curry&grade=A
+
+    Used req.query to dynamically build MongoDB filters.
+
+    Strengthened authorization by checking both:
+
+    Player _id
+
+    Logged-in user's userId
+
+    Learned the difference between authentication (who you are) and authorization (what you're allowed to access).
+
+    Added handling for invalid MongoDB IDs using centralized error handling.
+
+    Improved separation of responsibilities between:
+
+    Routes
+
+    Middleware
+
+    Controllers
+
+    Validators
+
+    Services
+    
+    Models/database
+
+    Learned that controllers should coordinate operations rather than contain all business logic.

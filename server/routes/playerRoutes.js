@@ -4,7 +4,6 @@ const auth = require("../middleware/auth");
 
 const {
   getPlayers,
-  getHistory,
   createAnalysis,
   deleteAnalysis,
   updatePlayer
@@ -12,14 +11,12 @@ const {
 
 const router = express.Router();
 
-router.get("/players", auth, getPlayers);
+router.get("/", auth, getPlayers);
 
-router.get("/history", auth, getHistory);
+router.post("/", auth, createAnalysis);
 
-router.post("/analyze", auth, createAnalysis);
+router.delete("/:id", auth, deleteAnalysis);
 
-router.delete("/history/:id", auth, deleteAnalysis);
-
-router.put("/history/:id", auth, updatePlayer);
+router.put("/:id", auth, updatePlayer);
 
 module.exports = router;

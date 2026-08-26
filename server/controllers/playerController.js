@@ -8,34 +8,35 @@ const {
   analyzePlayer
 } = require("../services/playerAnalysisService");
 
-async function getPlayers(req, res) {
-  const encodedGrade = req.query.grade;
-  const encodedName = req.query.name;
+async function getPlayers(req, res, next) {
 
-  let query = {};
+  try {
 
-  if (encodedGrade) {
-    query.grade = encodedGrade;
-  }
-
-  if (encodedName) {
-    query["player.name"] = {
-      $regex: encodedName,
-      $options: "i"
+    const query = {
+      userId: req.user.userId
     };
+
+    if (req.query.grade) {
+      query.grade = req.query.grade;
+    }
+
+    if (req.query.name) {
+      query["player.name"] = {
+        $regex: req.query.name,
+        $options: "i"
+      };
+    }
+
+    const players = await Player.find(query);
+
+    res.json(players);
+
+  } catch (error) {
+
+    next(error);
+
   }
 
-  const players = await Player.find(query);
-
-  res.json(players);
-}
-
-async function getHistory(req, res) {
-  const history = await Player.find({
-    userId: req.user.userId
-  }).sort({ createdAt: -1 });
-
-  res.json(history);
 }
 
 async function createAnalysis(req, res, next) {
@@ -146,7 +147,6 @@ async function updatePlayer(req, res) {
 
 module.exports = {
   getPlayers,
-  getHistory,
   createAnalysis,
   deleteAnalysis,
   updatePlayer

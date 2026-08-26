@@ -2,7 +2,7 @@ export async function analyzePlayer(player) {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/player/analyze`, {
+    const res = await fetch(`http://localhost:3000/player`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export async function loadPlayers() {
 
     console.log("token ", token);
 
-    const res = await fetch("http://localhost:3000/player/history", {
+    const res = await fetch("http://localhost:3000/player", {
 
         headers: {
             authorization: `Bearer ${token}`
@@ -48,7 +48,7 @@ export async function deleteAnalysis(id) {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/player/history/${id}`, 
+    const res = await fetch(`http://localhost:3000/player/${id}`, 
         {
             method: "DELETE",
 
@@ -64,7 +64,7 @@ export async function updatePlayer(id, updatedData) {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/player/history/${id}`, 
+    const res = await fetch(`http://localhost:3000/player/${id}`, 
         {
             method: "PUT",
 
@@ -82,18 +82,28 @@ export async function updatePlayer(id, updatedData) {
 
 export async function searchPlayers(name, grade) {
 
-    const query = `grade=${encodeURIComponent(grade)}&name=${encodeURIComponent(name)}`;
+    const params = new URLSearchParams();
+
+    if (name) {
+        params.append("name", name);
+    }
+
+    if (grade) {
+        params.append("grade", grade);
+    }
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:3000/player/players?${query}`, {
+    const res = await fetch(
+        `http://localhost:3000/player?${params.toString()}`,
+        {
             headers: {
                 authorization: `Bearer ${token}`
             }
-        });
+        }
+    );
 
     return await res.json();
-
 }
 
 export async function userSignup(email, password) {
