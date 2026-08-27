@@ -483,3 +483,57 @@ Day 21 — REST API Design & Authorization
     Models/database
 
     Learned that controllers should coordinate operations rather than contain all business logic.
+
+Day 22 — Frontend Architecture & Refactoring
+
+    Learned:
+
+    Refactored App.jsx by separating responsibilities into reusable React components.
+
+    Moved player form state into PlayerForm.
+
+    Created PlayerSearch and moved search/filter state into the component.
+
+    Created separate LoginForm and SignupForm components with their own form state.
+
+    Learned state ownership — state should live in the component that actually needs it.
+
+    Learned how callback props allow child components to send data back to the parent.
+
+    Separated frontend API functions into:
+
+    playerApi.js
+    authApi.js
+
+    Created a centralized apiClient.js for common API functionality such as:
+
+    authentication tokens
+    request headers
+    fetch()
+    JSON parsing
+    centralized error handling
+
+    Improved logout behavior by clearing user-specific React state.
+
+    Learned how to structure frontend code by responsibility and domain.
+
+    Day 22 Architecture
+    
+    components/
+    ├── PlayerForm.jsx
+    ├── PlayerSearch.jsx
+    ├── LoginForm.jsx
+    ├── SignupForm.jsx
+    ├── ResultCard.jsx
+    └── ResultList.jsx
+
+    api/
+    ├── apiClient.js
+    ├── playerApi.js
+    └── authApi.js
+
+    App.jsx
+
+    The main lesson:
+
+    Components handle UI and local state, API modules handle domain-specific requests, and apiClient handles shared communication with the backend.

@@ -1,28 +1,29 @@
 import { useState, useEffect } from "react";
 import PlayerForm from "./components/PlayerForm";
 import ResultList from "./components/ResultList";
-import { analyzePlayer, deleteAnalysis, updatePlayer, loadPlayers, searchPlayers, userSignup, userLogin, getCurrentUser } from "./services/api";
+import PlayerSearch from "./components/PlayerSearch";
+import LoginForm from "./components/LoginForm";
+import SignupForm from "./components/SignupForm";
+import {
+    analyzePlayer,
+    deleteAnalysis,
+    updatePlayer,
+    loadPlayers,
+    searchPlayers
+} from "./api/playerApi";
+
+import {
+    userSignup,
+    userLogin,
+    getCurrentUser
+} from "./api/authApi";
 
 function App() {
-  const [player, setPlayer] = useState({
-  name: "",
-  points: "",
-  assists: "",
-  rebounds: ""
-  });
   const [results, setResults] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState(null);
-
-  const [gradeFilter, setGradeFilter] = useState("");
-
-  const [searchName, setSearchName] = useState("");
-
-  const [email, setEmail] = useState("");
-
-  const [password, setPassword] = useState("");
 
   const [user, setUser] = useState(null);
 
@@ -30,7 +31,7 @@ function App() {
 
   let data;
 
-async function handleAnalyze() {
+async function handleAnalyze(player) {
   setLoading(true);
   setError("");
 
@@ -79,7 +80,7 @@ async function handleUpdate(id, updatedData) {
     setResults(data);
   }
 
-  async function handleUserSignup() {
+  async function handleUserSignup(email, password) {
     if (!email || !password) {
         setError("Please fill everything out");
         return;
@@ -96,7 +97,7 @@ async function handleUpdate(id, updatedData) {
     }
   }
 
-  async function handleUserLogin() {
+  async function handleUserLogin(email, password) {
     try {
 
       const data = await userLogin(email, password);
@@ -121,8 +122,7 @@ async function handleUpdate(id, updatedData) {
 
     setUser(null);
 
-    loadUser();
-    loadHistory(); 
+    setResults([]);
   }
 
   async function loadUser() {
@@ -166,106 +166,14 @@ async function handleUpdate(id, updatedData) {
       </>
     )}
 
-      <input
-        type="text"
-        placeholder="Search player"
+    <PlayerSearch onSearch={handleSearch} />
 
-        value={searchName}
-
-        onChange={(e) =>
-          setSearchName(e.target.value)
-        }
-      />
-      <select value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)}>
-
-        <option value="">
-          All Grades
-        </option>
-
-        <option value="S+">
-          S+
-        </option>
-
-        <option value="S">
-          S
-        </option>
-
-        <option value="A">
-          A
-        </option>
-
-        <option value="B">
-          B
-        </option>
-
-        <option value="C">
-          C
-        </option>
-
-      </select>
-
-      <button onClick={() => handleSearch(searchName, gradeFilter)}> Search </button>
-      <h2>Signup</h2>
-
-      <input
-        type="text"
-        placeholder="Email"
-
-        value={email}
-
-        onChange={(e) =>
-          setEmail(e.target.value)
-        }
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-
-        value={password}
-
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
-      />
-
-      <button onClick={handleUserSignup}>
-        Signup
-      </button>
+    <SignupForm onSignup={handleUserSignup} />
 
 
-      <h3>Login</h3>
-      <input
-        type="text"
-        placeholder="Email"
+    <LoginForm onLogin={handleUserLogin} />
 
-        value={email}
-
-        onChange={(e) =>
-          setEmail(e.target.value)
-        }
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-
-        value={password}
-
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
-      />
-
-      <button onClick={handleUserLogin}>
-        Login
-      </button>
-
-      <PlayerForm
-        player={player}
-        setPlayer={setPlayer}
-        onAnalyze={handleAnalyze}
-      />
+    <PlayerForm onAnalyze={handleAnalyze} />
 
       {loading && <p>Analyzing player...</p>}
       {error && <p>{error}</p>}

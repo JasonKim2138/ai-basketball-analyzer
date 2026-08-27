@@ -1,4 +1,14 @@
-function PlayerForm({player, setPlayer, onAnalyze}){
+import { useState } from "react";
+
+function PlayerForm({ onAnalyze }) {
+
+    const [player, setPlayer] = useState({
+        name: "",
+        points: "",
+        assists: "",
+        rebounds: ""
+    });
+
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <input
@@ -45,7 +55,10 @@ function PlayerForm({player, setPlayer, onAnalyze}){
                 }
             />
 
-            <button onClick={onAnalyze}>Analyze</button>
+            <button onClick={() => onAnalyze(player)}>
+                Analyze
+            </button>
+            
         </div>
   );
 }
