@@ -1,65 +1,69 @@
 import { useState } from "react";
 
 function ResultCard({ result, onDelete, onUpdate }) {
+    return (
+        <div className="result-card">
 
-  const [name, setName] = useState(result?.player?.name || "");
-  const [points, setPoints] = useState(result?.player?.points || 0);
-  const [assists, setAssists] = useState(result?.player?.assists || 0);
-  const [rebounds, setRebounds] = useState(result?.player?.rebounds || 0);
+            <div className="result-header">
+                <div>
+                    <h3>{result?.player?.name}</h3>
+                    <p>Player Analysis</p>
+                </div>
 
-  function handleSave() {
-    onUpdate(result._id, {
-      name,
-      points: Number(points),
-      assists: Number(assists),
-      rebounds: Number(rebounds)
-    });
-  }
+                <div className="grade">
+                    {result?.grade}
+                </div>
+            </div>
 
-  return (
-    <div style={{
-      border: "1px solid white",
-      padding: "10px",
-      marginBottom: "10px"
-    }}>
+            <div className="stats-grid">
 
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+                <div className="stat">
+                    <span>Points</span>
+                    <strong>{result?.player?.points}</strong>
+                </div>
 
-      <input
-        type="number"
-        value={points}
-        onChange={(e) => setPoints(e.target.value)}
-      />
+                <div className="stat">
+                    <span>Assists</span>
+                    <strong>{result?.player?.assists}</strong>
+                </div>
 
-      <input
-        type="number"
-        value={assists}
-        onChange={(e) => setAssists(e.target.value)}
-      />
+                <div className="stat">
+                    <span>Rebounds</span>
+                    <strong>{result?.player?.rebounds}</strong>
+                </div>
 
-      <input
-        type="number"
-        value={rebounds}
-        onChange={(e) => setRebounds(e.target.value)}
-      />
+            </div>
 
-      <p>Starter: {result?.starter}</p>
-      <p>Grade: {result?.grade}</p>
-      <p>Message: {result?.message}</p>
+            <div className="analysis">
 
-      <button onClick={handleSave}>
-        Save Changes
-      </button>
+                <p>
+                    <strong>Status:</strong> {result?.starter}
+                </p>
 
-      <button onClick={() => onDelete(result._id)}>
-        Delete
-      </button>
+                <p>
+                    <strong>Analysis:</strong> {result?.message}
+                </p>
 
-    </div>
-  );
+            </div>
+
+            <div className="result-actions">
+
+                <button
+                    onClick={() => onUpdate(result._id)}
+                >
+                    Update
+                </button>
+
+                <button
+                    onClick={() => onDelete(result._id)}
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+    );
 }
 
 export default ResultCard;

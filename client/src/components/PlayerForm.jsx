@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 function PlayerForm({ onAnalyze }) {
-
     const [player, setPlayer] = useState({
         name: "",
         points: "",
@@ -10,57 +9,86 @@ function PlayerForm({ onAnalyze }) {
     });
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <input
-                placeholder="Name"
-                value={player.name}
-                onChange={(e) =>
-                    setPlayer({
-                        ...player,
-                        name: e.target.value
-                    })
-                }
-            />
+        <div className="player-form-card">
 
-            <input
-                placeholder="Points"
-                value={player.points}
-                onChange={(e) =>
-                    setPlayer({
-                        ...player,
-                        points: e.target.value
-                    })
-                }
-            />
+            <h3>Analyze a Player</h3>
 
-            <input
-                placeholder="Assists"
-                value={player.assists}
-                onChange={(e) =>
-                    setPlayer({
-                        ...player,
-                        assists: e.target.value
-                    })
-                }
-            />
+            <div className="form-group">
+                <label>Player Name</label>
 
-            <input
-                placeholder="Rebounds"
-                value={player.rebounds}
-                onChange={(e) =>
-                    setPlayer({
-                        ...player,
-                        rebounds: e.target.value
-                    })
-                }
-            />
+                <input
+                    placeholder="e.g. Stephen Curry"
+                    value={player.name}
+                    onChange={(e) =>
+                        setPlayer({
+                            ...player,
+                            name: e.target.value
+                        })
+                    }
+                />
+            </div>
 
-            <button onClick={() => onAnalyze(player)}>
-                Analyze
+            <div className="stats-grid">
+
+                <div className="form-group">
+                    <label>Points</label>
+
+                    <input
+                        type="number"
+                        placeholder="30"
+                        value={player.points}
+                        onChange={(e) =>
+                            setPlayer({
+                                ...player,
+                                points: e.target.value
+                            })
+                        }
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Assists</label>
+
+                    <input
+                        type="number"
+                        placeholder="10"
+                        value={player.assists}
+                        onChange={(e) =>
+                            setPlayer({
+                                ...player,
+                                assists: e.target.value
+                            })
+                        }
+                    />
+                </div>
+
+            </div>
+
+            <div className="form-group">
+                <label>Rebounds</label>
+
+                <input
+                    type="number"
+                    placeholder="10"
+                    value={player.rebounds}
+                    onChange={(e) =>
+                        setPlayer({
+                            ...player,
+                            rebounds: e.target.value
+                        })
+                    }
+                />
+            </div>
+
+            <button
+                className="analyze-button"
+                onClick={() => onAnalyze(player)}
+            >
+                Analyze Player 🏀
             </button>
-            
+
         </div>
-  );
+    );
 }
 
 export default PlayerForm;

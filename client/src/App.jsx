@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import PlayerForm from "./components/PlayerForm";
-import ResultList from "./components/ResultList";
-import PlayerSearch from "./components/PlayerSearch";
-import LoginForm from "./components/LoginForm";
-import SignupForm from "./components/SignupForm";
+import Dashboard from "./components/Dashboard";
+import Navbar from "./components/Navbar";
+import AuthScreen from "./components/AuthScreen";
+import "./App.css";
 import {
     analyzePlayer,
     deleteAnalysis,
@@ -155,30 +154,30 @@ async function handleUpdate(id, updatedData) {
 
 
   return (
-    <div>
-      <h1>🏀 AI Basketball Analyzer</h1>
-      {user && (
-      <>
-        <p>Welcome {user.email}</p>
-        <button onClick={handleLogout}>
-            Logout
-        </button>
-      </>
+    <div className="app">
+    <Navbar
+    user={user}
+    onLogout={handleLogout}
+    />
+
+    {!user && (
+        <AuthScreen
+            onLogin={handleUserLogin}
+            onSignup={handleUserSignup}
+        />
     )}
 
-    <PlayerSearch onSearch={handleSearch} />
-
-    <SignupForm onSignup={handleUserSignup} />
-
-
-    <LoginForm onLogin={handleUserLogin} />
-
-    <PlayerForm onAnalyze={handleAnalyze} />
-
-      {loading && <p>Analyzing player...</p>}
-      {error && <p>{error}</p>}
-      {results.length === 0 && (<p>No players analyzed yet</p>)}
-      {results.length > 0 && (<ResultList results={results} onDelete={handleDelete} onUpdate={handleUpdate}/>)}
+    {user && (
+    <Dashboard
+        onAnalyze={handleAnalyze}
+        onSearch={handleSearch}
+        results={results}
+        onDelete={handleDelete}
+        onUpdate={handleUpdate}
+        loading={loading}
+        error={error}
+    />
+    )}
     </div>
   );
 }

@@ -537,3 +537,74 @@ Day 22 — Frontend Architecture & Refactoring
     The main lesson:
 
     Components handle UI and local state, API modules handle domain-specific requests, and apiClient handles shared communication with the backend.
+
+Day 23 — Frontend Architecture & UI Design
+    Learned:
+
+    Today I focused on turning my frontend from a developer prototype into a more structured and polished application.
+
+    Component Architecture
+
+    I learned how to break my React application into components based on responsibility:
+
+    App
+    ├── Navbar
+    ├── AuthScreen
+    │   ├── LoginForm
+    │   └── SignupForm
+    └── Dashboard
+        ├── PlayerForm
+        ├── PlayerSearch
+        └── ResultList
+            └── ResultCard
+
+    I learned that the component tree represents which components render other components. It does not necessarily represent the folder structure.
+
+    State Ownership
+
+    I learned to keep state in the component that actually needs to own it.
+
+    For example:
+
+    PlayerForm → player state
+    PlayerSearch → search name and grade filter
+    App → results, loading, errors, and authenticated user
+
+    This helped reduce unnecessary props and made the application easier to maintain.
+
+    UI Design
+
+    I added:
+
+    Dashboard layout
+    Player analysis card
+    Search/filter card
+    Professional result cards
+    Consistent spacing
+    Responsive layouts
+    Button hover states
+    Input focus states
+    CSS variables for a consistent design system
+
+    I also learned how CSS flex, grid, max-width, media queries, and CSS variables help create a cleaner UI.
+
+    Responsive Design
+
+    I learned how to use media queries to change the layout for smaller screens.
+
+    For example, the search controls and statistics change from horizontal layouts to vertical layouts on mobile-sized screens.
+
+    Day 23 Result
+
+    My application now has:
+
+    Organized React components
+    Clear state ownership
+    Authentication UI
+    Dashboard UI
+    Search and filtering UI
+    Styled player analysis cards
+    Responsive design
+    A consistent visual design system
+
+    The application is no longer just functional — it is starting to look and behave like a real product.

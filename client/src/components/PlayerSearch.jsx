@@ -1,41 +1,42 @@
 import { useState } from "react";
 
 function PlayerSearch({ onSearch }) {
-
     const [searchName, setSearchName] = useState("");
     const [gradeFilter, setGradeFilter] = useState("");
 
     return (
-        <div>
+        <div className="search-card">
 
-            <input
-                type="text"
-                placeholder="Search player"
-                value={searchName}
-                onChange={(e) =>
-                    setSearchName(e.target.value)
-                }
-            />
+            <div className="search-controls">
 
-            <select
-                value={gradeFilter}
-                onChange={(e) =>
-                    setGradeFilter(e.target.value)
-                }
-            >
-                <option value="">All Grades</option>
-                <option value="S+">S+</option>
-                <option value="S">S</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-            </select>
+                <input
+                    type="text"
+                    placeholder="Search player..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                />
 
-            <button
-                onClick={() => onSearch(searchName, gradeFilter)}
-            >
-                Search
-            </button>
+                <select
+                    value={gradeFilter}
+                    onChange={(e) => setGradeFilter(e.target.value)}
+                >
+                    <option value="">All Grades</option>
+                    <option value="S+">S+</option>
+                    <option value="S">S</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+
+                <button
+                    className="search-button"
+                    onClick={() => onSearch(searchName, gradeFilter)}
+                >
+                    Search
+                </button>
+
+            </div>
 
         </div>
     );
