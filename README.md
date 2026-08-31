@@ -539,6 +539,7 @@ Day 22 — Frontend Architecture & Refactoring
     Components handle UI and local state, API modules handle domain-specific requests, and apiClient handles shared communication with the backend.
 
 Day 23 — Frontend Architecture & UI Design
+
     Learned:
 
     Today I focused on turning my frontend from a developer prototype into a more structured and polished application.
@@ -608,3 +609,57 @@ Day 23 — Frontend Architecture & UI Design
     A consistent visual design system
 
     The application is no longer just functional — it is starting to look and behave like a real product.
+
+Day 24 — Better UX
+
+    Learned:
+
+    Loading UX:
+
+    Disable buttons while requests are running.
+
+    Change button text to communicate progress.
+
+    Prevent duplicate API submissions.
+
+    Success & error feedback:
+
+    Added separate success and error states.
+
+    Learned how backend HTTP errors become JavaScript errors through your API layer.
+
+    Displayed meaningful feedback to the user.
+
+    Delete UX:
+
+    Added confirmation before destructive actions.
+
+    Added success/error feedback after deletion.
+
+    Update UX:
+
+    Built an edit mode for ResultCard.
+
+    Allowed users to edit name, points, assists, and rebounds.
+
+    Learned that frontend and backend data structures must match.
+
+    Kept the edit form open when an update fails.
+
+    Recalculated the player's analysis after changing stats.
+
+    Empty states:
+
+    Created a reusable EmptyState component.
+
+    Learned that an empty screen should guide the user rather than simply say "nothing exists."
+    
+    Most important Day 24 lesson
+
+    You moved from thinking:
+
+    "Does the feature work?"
+
+    to:
+
+    "What does the user experience when they use the feature?"

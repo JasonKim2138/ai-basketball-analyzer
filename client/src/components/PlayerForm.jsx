@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function PlayerForm({ onAnalyze }) {
+function PlayerForm({ onAnalyze, loading }) {
     const [player, setPlayer] = useState({
         name: "",
         points: "",
@@ -83,8 +83,9 @@ function PlayerForm({ onAnalyze }) {
             <button
                 className="analyze-button"
                 onClick={() => onAnalyze(player)}
+                disabled={loading}
             >
-                Analyze Player 🏀
+                {loading ? "Analyzing..." : "Analyze Player 🏀"}
             </button>
 
         </div>

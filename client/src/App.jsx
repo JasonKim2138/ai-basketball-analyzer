@@ -26,18 +26,22 @@ function App() {
 
   const [user, setUser] = useState(null);
 
-  
+  const [success, setSuccess] = useState("");
 
   let data;
 
 async function handleAnalyze(player) {
   setLoading(true);
   setError("");
+  setSuccess("")
 
   try {
     const data = await analyzePlayer(player);
 
     setResults([...results, data]);
+
+    setSuccess("Player analyzed successfully! 🏀");
+
   } catch (error) {
     setError(error.message);
   } finally {
@@ -52,25 +56,53 @@ async function handleAnalyze(player) {
     setResults(data);
   }
 
-  async function handleDelete(id) {
+async function handleDelete(id) {
 
-    const data = await deleteAnalysis(id);
-    console.log("hello");
-    console.log(data);
-    loadHistory();
+    const confirmed = window.confirm(
+        "Are you sure you want to delete this player analysis?"
+    );
 
-  }
+    if (!confirmed) {
+        return;
+    }
 
-async function handleUpdate(id, updatedData) {
+    try {
 
-  try {
-      await updatePlayer(id, updatedData);
-      loadHistory();
-  } catch (error) {
-      setError(error.message);
-  }
+        setError("");
+        setSuccess("");
 
+        await deleteAnalysis(id);
+
+        await loadHistory();
+
+        setSuccess("Player analysis deleted successfully.");
+
+    } catch (error) {
+
+        setError(error.message);
+
+    }
 }
+
+  async function handleUpdate(id, updatedData) {
+
+      try {
+          setError("");
+          setSuccess("");
+
+          await updatePlayer(id, updatedData);
+          await loadHistory();
+
+          setSuccess("Player updated successfully! 🏀");
+
+          return true;
+
+      } catch (error) {
+          setError(error.message);
+          return false;
+      }
+
+  }
 
   async function handleSearch(searchName, gradeFilter) {
 
@@ -176,6 +208,7 @@ async function handleUpdate(id, updatedData) {
         onUpdate={handleUpdate}
         loading={loading}
         error={error}
+        success={success}
     />
     )}
     </div>
