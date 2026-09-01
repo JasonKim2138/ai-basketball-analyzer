@@ -1,5 +1,9 @@
-function Navbar({ user, onLogout }) {
-
+function Navbar({
+    user,
+    onLogout,
+    currentPage,
+    onNavigate
+}) {
     return (
         <nav className="navbar">
 
@@ -8,16 +12,56 @@ function Navbar({ user, onLogout }) {
             </h1>
 
             {user && (
-                <div className="navbar-user">
-                    <span>Welcome {user.email}</span>
+                <>
+                    <div className="navbar-links">
 
-                    <button 
-                        className="navbar-button"
-                        onClick={onLogout}
-                    >
-                        Logout
-                    </button>
-                </div>
+                        <button
+                            onClick={() => onNavigate("dashboard")}
+                            className={
+                                currentPage === "dashboard"
+                                    ? "nav-active"
+                                    : ""
+                            }
+                        >
+                            Dashboard
+                        </button>
+
+                        <button
+                            onClick={() => onNavigate("history")}
+                            className={
+                                currentPage === "history"
+                                    ? "nav-active"
+                                    : ""
+                            }
+                        >
+                            History
+                        </button>
+
+                        <button
+                            onClick={() => onNavigate("profile")}
+                            className={
+                                currentPage === "profile"
+                                    ? "nav-active"
+                                    : ""
+                            }
+                        >
+                            Profile
+                        </button>
+
+                    </div>
+
+                    <div className="navbar-user">
+
+                        <span>
+                            {user.email}
+                        </span>
+
+                        <button onClick={onLogout}>
+                            Logout
+                        </button>
+
+                    </div>
+                </>
             )}
 
         </nav>

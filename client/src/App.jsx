@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import Dashboard from "./components/Dashboard";
-import Navbar from "./components/Navbar";
-import AuthScreen from "./components/AuthScreen";
+import MainApp from "./components/MainApp";
+import AuthPage from "./pages/AuthPage";
 import "./App.css";
 import {
     analyzePlayer,
@@ -27,6 +26,8 @@ function App() {
   const [user, setUser] = useState(null);
 
   const [success, setSuccess] = useState("");
+
+  const [currentPage, setCurrentPage] = useState("dashboard");
 
   let data;
 
@@ -186,31 +187,32 @@ async function handleDelete(id) {
 
 
   return (
-    <div className="app">
-    <Navbar
-    user={user}
-    onLogout={handleLogout}
-    />
+    <div>
 
-    {!user && (
-        <AuthScreen
-            onLogin={handleUserLogin}
-            onSignup={handleUserSignup}
-        />
-    )}
+      {!user && (
+          <AuthPage
+              onLogin={handleUserLogin}
+              onSignup={handleUserSignup}
+              error={error}
+          />
+      )}
 
-    {user && (
-    <Dashboard
-        onAnalyze={handleAnalyze}
-        onSearch={handleSearch}
-        results={results}
-        onDelete={handleDelete}
-        onUpdate={handleUpdate}
-        loading={loading}
-        error={error}
-        success={success}
-    />
-    )}
+      {user && (
+          <MainApp
+              user={user}
+              onLogout={handleLogout}
+              currentPage={currentPage}
+              onNavigate={setCurrentPage}
+              onAnalyze={handleAnalyze}
+              onSearch={handleSearch}
+              results={results}
+              onDelete={handleDelete}
+              onUpdate={handleUpdate}
+              loading={loading}
+              error={error}
+          />
+      )}
+
     </div>
   );
 }

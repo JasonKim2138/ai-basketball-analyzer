@@ -1,665 +1,913 @@
-This project is about analyzing basketball players and games
+# AI Basketball Analyzer
 
-Current version: Day 17
+This project is about analyzing basketball players and games.
 
-Day 1 — Project Setup
+**Current version: Day 25**
 
-    Learned:
+-----------------------------------------------------------------------------------
 
-    React frontend
-    Node/Express backend
-    Client/server separation
+## Day 1 — Project Setup
 
-Day 2 — Node.js + Express Basics
+**Learned:**
 
-    Learned:
+React frontend
+Node/Express backend
+Client/server separation
 
-    const app = express();
+-----------------------------------------------------------------------------------
 
-    Creating a server.
+## Day 2 — Node.js + Express Basics
 
-    Routes:
+**Learned:**
 
-    app.get()
-    app.post()
+const app = express();
 
-    Middleware:
+Creating a server.
 
-    app.use()
+Routes:
 
-Day 3 — Frontend ↔ Backend Communication
+app.get()
+app.post()
 
-    Learned:
+Middleware:
 
-    React sends requests:
+app.use()
 
-    fetch()
+-----------------------------------------------------------------------------------
 
-    Backend receives:
+## Day 3 — Frontend ↔ Backend Communication
 
-    req.body
+**Learned:**
 
-    Backend responds:
+React sends requests:
 
-    res.json()
+fetch()
 
-Day 4 — REST API Thinking
+Backend receives:
 
-    Learned:
+req.body
 
-    GET:
+Backend responds:
 
-    Retrieve data
+res.json()
 
-    POST:
+-----------------------------------------------------------------------------------
 
-    Send/create data
+## Day 4 — REST API Thinking
 
-    Example:
+**Learned:**
 
-    POST /analyze
+GET:
 
-    creates analysis.
+Retrieve data
 
-Day 5 — React State
+POST:
 
-    Learned:
+Send/create data
 
-    useState()
+Example:
 
-    Example:
+POST /analyze
 
-    const [player,setPlayer] = useState();
+creates analysis.
 
-    State changes cause re-render.
+-----------------------------------------------------------------------------------
 
-Day 6 — Object State
+## Day 5 — React State
 
-    Learned:
+**Learned:**
 
-    Instead of:
+useState()
 
-    name
-    points
-    assists
-    rebounds
+Example:
 
-    you used:
+const [player, setPlayer] = useState();
 
-    player = {
+State changes cause re-render.
+
+-----------------------------------------------------------------------------------
+
+## Day 6 — Object State
+
+**Learned:**
+
+Instead of:
+
+name
+points
+assists
+rebounds
+
+you used:
+
+player = {
     name,
     points,
     assists,
     rebounds
-    }
+}
 
-    Learned:
+Learned:
 
-    ...player
+...player
 
-    spread operator.
+spread operator.
 
-Day 7 — Components
+-----------------------------------------------------------------------------------
 
-    Learned:
+## Day 7 — Components
 
-    Breaking UI into pieces:
+**Learned:**
 
-    Example:
+Breaking UI into pieces.
 
-    App
-    |
-    ├── InputForm
-    |
-    └── ResultCard
+Example:
 
-    Benefits:
+App
+|
+├── InputForm
+|
+└── ResultCard
 
-    Cleaner code
-    Reusable components
+Benefits:
 
-Day 8 — MongoDB Basics
+Cleaner code
+Reusable components
 
-    Learned:
+-----------------------------------------------------------------------------------
 
-    Database stores data.
+## Day 8 — MongoDB Basics
 
-    MongoDB:
+**Learned:**
 
-    Database
-    |
-    Collection
-    |
-    Documents
+Database stores data.
 
-    Mongoose connects Node to MongoDB.
+MongoDB:
 
-Day 9 — Schemas & Models
+Database
+|
+Collection
+|
+Documents
 
-    Learned:
+Mongoose connects Node to MongoDB.
 
-    Schema:
+-----------------------------------------------------------------------------------
 
-    structure of data
+## Day 9 — Schemas & Models
 
-    Model:
+**Learned:**
 
-    tool to interact with MongoDB
+Schema:
 
-    Example:
+Structure of data.
 
-    PlayerAnalysis.create()
+Model:
 
-Day 10 — Authentication Basics
+Tool to interact with MongoDB.
 
-    Learned:
+Example:
 
-    Users need:
+PlayerAnalysis.create()
 
-    email
-    password
+-----------------------------------------------------------------------------------
 
-    Passwords should never be stored directly.
+## Day 10 — Authentication Basics
 
-Day 11 — Password Hashing
+**Learned:**
 
-    Learned:
+Users need:
 
-    bcrypt:
+email
+password
 
-    Plain password
-        ↓
-    bcrypt.hash()
-        ↓
-    Hashed password
+Passwords should never be stored directly.
 
-    Database stores:
+-----------------------------------------------------------------------------------
 
-    $2b$10$....
+## Day 11 — Password Hashing
 
-    not:
+**Learned:**
 
-    mypassword123
+Plain password
+      ↓
+bcrypt.hash()
+      ↓
+Hashed password
 
-Day 12 — Signup System
+Database stores:
 
-    Learned:
+$2b$10$....
 
-    Duplicate email prevention:
+not:
 
-    findOne()
+mypassword123
 
-Day 13 — Login System
+-----------------------------------------------------------------------------------
 
-    Learned:
+## Day 12 — Signup System
 
-    bcrypt.compare()
+**Learned:**
 
-Day 14 — JWT
+Duplicate email prevention:
 
-    Learned:
+findOne()
 
-    JWT stores identity.
+-----------------------------------------------------------------------------------
 
-    Example:
+## Day 13 — Login System
 
-    {
-    userId:user._id
-    }
+**Learned:**
 
-    Token allows the server to remember the user.
+bcrypt.compare()
 
-Day 15 — Validation
+-----------------------------------------------------------------------------------
 
-    Important rule:
+## Day 14 — JWT
 
-    Frontend validation:
+**Learned:**
 
-    Purpose:
+JWT stores identity.
 
-    Help users.
+Example:
 
-    Example:
+{
+    userId: user._id
+}
 
-    Email cannot be empty
+Token allows the server to identify the logged-in user.
 
-    Fast feedback.
+-----------------------------------------------------------------------------------
 
-    Backend validation:
+## Day 15 — Validation
 
-    Purpose:
+Important rule:
 
-    Security.
+### Frontend validation
 
-    Because frontend can be bypassed.
+Purpose:
 
-Day 16 — Protected Routes
+Help users.
 
-    Learned:
+Example:
 
-    Middleware:
+Email cannot be empty
 
-    verifies JWT
-    creates req.user
+Provides fast feedback.
 
-    Example:
+### Backend validation
 
-    req.user={
-    userId:"123"
-    }
+Purpose:
 
-Day 17 Summary — User Ownership & Authorization
+Security.
 
-    Learned:
+Because frontend validation can be bypassed.
 
-    Make your app support multiple users safely.
+-----------------------------------------------------------------------------------
 
-    1. Authentication vs Authorization
-        Authentication handled by middleware (auth), Authorization handled by routes
+## Day 16 — Protected Routes
 
-    2. Store ownership(userId) when creating data
+**Learned:**
 
-    3. Protect database queries
+Middleware:
 
-    4. Protect individual documents
-    
-    5. Error codes: 
-        401 Unauthorized, 403 Forbidden
+Verifies JWT
+Creates `req.user`
 
-Day 18 — Professional Backend Architecture & Modularity
+Example:
 
-    Learned:
+req.user = {
+    userId: "123"
+}
 
-    How to organize backend code by responsibility instead of putting everything inside server.js.
+-----------------------------------------------------------------------------------
 
-    Your backend went from:
+## Day 17 Summary — User Ownership & Authorization
 
-    server.js
-    ├── Database
-    ├── Models
-    ├── Middleware
-    ├── Authentication
-    ├── Routes
-    ├── Controllers/logic
-    └── Basketball logic
+**Learned:**
 
-    to:
+Make the app support multiple users safely.
 
-    server/
-    ├── config/
-    │   └── db.js
-    │
-    ├── controllers/
-    │   ├── authController.js
-    │   └── playerController.js
-    │
-    ├── middleware/
-    │   └── auth.js
-    │
-    ├── models/
-    │   ├── User.js
-    │   └── Player.js
-    │
-    ├── routes/
-    │   ├── authRoutes.js
-    │   └── playerRoutes.js
-    │
-    ├── services/
-    │   └── playerAnalysisService.js
-    │
-    ├── .env
-    ├── .gitignore
-    └── server.js
+### 1. Authentication vs Authorization
 
-    require() + module.exports
+Authentication determines **who you are**.
 
-    You learned that CommonJS modules work like:
+Authorization determines **what you're allowed to access**.
 
-    File A
-    ↓
-    module.exports
-    ↓
-    File B
-    ↓
-    require()
+Authentication is handled by middleware, while authorization is enforced by routes/controllers/database queries.
 
-    models/
+### 2. Store ownership
 
-    You separated:
+When creating data, store the logged-in user's ID:
 
-    models/
-    ├── User.js
-    └── Player.js
+userId
 
-    Models are responsible for:
+### 3. Protect database queries
 
-    Defining how data is structured and interacting with MongoDB.
+Only retrieve data belonging to the authenticated user.
 
-    middleware/
+### 4. Protect individual documents
 
-    You moved authentication into:
+Update and delete operations check both:
 
-    middleware/auth.js
-    
-    It answers:
+Player _id
++
+Logged-in user's userId
 
-    "Is this request authenticated?"
+### 5. HTTP error codes
 
-    services/
+401 → Unauthorized / not authenticated
 
-    Its responsibility:
+403 → Forbidden / authenticated but not allowed
 
-    Basketball/business logic.
+-----------------------------------------------------------------------------------
 
-    routes/
+## Day 18 — Professional Backend Architecture & Modularity
 
-    Routes answer:
+**Learned:**
 
-    "Which endpoint is being requested, and which function should handle it?"
+How to organize backend code by responsibility instead of putting everything inside `server.js`.
 
-    controllers/
+Backend went from:
 
-    Controllers contain the actual request/response logic.
+server.js
+├── Database
+├── Models
+├── Middleware
+├── Authentication
+├── Routes
+├── Controllers/logic
+└── Basketball logic
 
-Day 20 — Backend Robustness
+to:
 
-    Learned:
+server/
+├── config/
+│   └── db.js
+│
+├── controllers/
+│   ├── authController.js
+│   └── playerController.js
+│
+├── middleware/
+│   └── auth.js
+│
+├── models/
+│   ├── User.js
+│   └── Player.js
+│
+├── routes/
+│   ├── authRoutes.js
+│   └── playerRoutes.js
+│
+├── services/
+│   └── playerAnalysisService.js
+│
+├── .env
+├── .gitignore
+└── server.js
 
-    1. Backend validation
+### Modules
 
-    You learned that the backend should never blindly trust frontend data.
+Learned how CommonJS modules work:
 
-    You created a validator to check:
+File A
+↓
+module.exports
+↓
+File B
+↓
+require()
 
-    Player name
-    Points
-    Assists
-    Rebounds
+### Models
 
-    Invalid data returns:
+Models are responsible for:
 
-    res.status(400).json({
+Defining how data is structured and interacting with MongoDB.
+
+### Middleware
+
+Moved authentication into:
+
+middleware/auth.js
+
+Its responsibility:
+
+"Is this request authenticated?"
+
+### Services
+
+Responsible for:
+
+Basketball/business logic.
+
+### Routes
+
+Routes answer:
+
+"Which endpoint is being requested,
+and which function should handle it?"
+
+### Controllers
+
+Controllers contain the request/response logic.
+
+-----------------------------------------------------------------------------------
+
+## Day 20 — Backend Robustness
+
+**Learned:**
+
+### 1. Backend validation
+
+The backend should never blindly trust frontend data.
+
+Created a validator to check:
+
+Player name
+Points
+Assists
+Rebounds
+
+Invalid data returns:
+
+res.status(400).json({
     message: "Invalid player data",
     errors
-    });
+});
 
-    2. Frontend error handling
+### 2. Frontend error handling
 
-    You learned that fetch() doesn't automatically throw for HTTP 400/500.
+Learned that `fetch()` does not automatically throw for HTTP 400/500 responses.
 
-    So your API function checks:
+API functions check:
 
-    if (!response.ok) {
+if (!response.ok) {
     throw new Error(data.message);
-    }
+}
 
-    Then React handles it with:
+React then handles the error:
 
-    try {
+try {
     // request
-    } catch (error) {
+} catch (error) {
     setError(error.message);
-    } finally {
+} finally {
     setLoading(false);
-    }
-    
-    3. Safe updates
+}
 
-    You changed your update approach so users can modify:
+### 3. Safe updates
 
-    name
-    points
-    assists
-    rebounds
+Users can modify:
 
-    while the backend controls:
+name
+points
+assists
+rebounds
 
-    starter
-    grade
-    message
-    userId
+while the backend controls:
 
-    You also learned partial updates—changing only points shouldn't erase the other stats.
+starter
+grade
+message
+userId
 
-    4. Centralized error handling
+Learned partial updates so changing one stat doesn't erase the other stats.
 
-    You created:
+### 4. Centralized error handling
 
-    middleware/errorHandler.js
+Created:
 
-    and learned:
+middleware/errorHandler.js
 
-    next(error);
+Learned:
 
-    passes unexpected errors from your controller to the centralized error middleware.
+next(error);
 
-    Most importantly, you learned the difference between:
+passes unexpected errors from the controller to centralized error middleware.
 
-    400 → expected/handled client problem
-    500 → unexpected server problem
+Most importantly:
 
-Day 21 — REST API Design & Authorization
+400 → Expected/handled client problem
 
-    Learned:
+500 → Unexpected server problem
 
-    Refactored API endpoints to follow a resource-based REST structure:
+-----------------------------------------------------------------------------------
 
-    POST /player → create a player
+## Day 21 — REST API Design & Authorization
 
-    GET /player → retrieve players
+**Learned:**
 
-    PUT /player/:id → update a player
+Refactored API endpoints to follow a resource-based REST structure:
 
-    DELETE /player/:id → delete a player
+POST /player       → create a player
 
-    Learned how query parameters work:
+GET /player        → retrieve players
 
-    /player?name=Curry&grade=A
+PUT /player/:id    → update a player
 
-    Used req.query to dynamically build MongoDB filters.
+DELETE /player/:id → delete a player
 
-    Strengthened authorization by checking both:
+### Query parameters
 
-    Player _id
+Learned how query parameters work:
 
-    Logged-in user's userId
+/player?name=Curry&grade=A
 
-    Learned the difference between authentication (who you are) and authorization (what you're allowed to access).
+Used `req.query` to dynamically build MongoDB filters.
 
-    Added handling for invalid MongoDB IDs using centralized error handling.
+### Authorization
 
-    Improved separation of responsibilities between:
+Strengthened authorization by checking both:
 
-    Routes
+Player _id
++
+Logged-in user's userId
 
-    Middleware
+Learned the difference between:
 
-    Controllers
+Authentication → Who you are
 
-    Validators
+Authorization → What you're allowed to access
 
-    Services
-    
-    Models/database
+Added handling for invalid MongoDB IDs using centralized error handling.
 
-    Learned that controllers should coordinate operations rather than contain all business logic.
+### Separation of responsibilities
 
-Day 22 — Frontend Architecture & Refactoring
+Improved separation between:
 
-    Learned:
+Routes
+Middleware
+Controllers
+Validators
+Services
+Models/database
 
-    Refactored App.jsx by separating responsibilities into reusable React components.
+Learned that controllers should coordinate operations rather than contain all business logic.
 
-    Moved player form state into PlayerForm.
+-----------------------------------------------------------------------------------
 
-    Created PlayerSearch and moved search/filter state into the component.
+## Day 22 — Frontend Architecture & Refactoring
 
-    Created separate LoginForm and SignupForm components with their own form state.
+**Learned:**
 
-    Learned state ownership — state should live in the component that actually needs it.
+Refactored `App.jsx` by separating responsibilities into reusable React components.
 
-    Learned how callback props allow child components to send data back to the parent.
+Moved player form state into:
 
-    Separated frontend API functions into:
+PlayerForm
 
-    playerApi.js
-    authApi.js
+Created `PlayerSearch` and moved search/filter state into the component.
 
-    Created a centralized apiClient.js for common API functionality such as:
+Created separate:
 
-    authentication tokens
-    request headers
-    fetch()
-    JSON parsing
-    centralized error handling
+LoginForm
+SignupForm
 
-    Improved logout behavior by clearing user-specific React state.
+with their own form state.
 
-    Learned how to structure frontend code by responsibility and domain.
+### State ownership
 
-    Day 22 Architecture
-    
-    components/
-    ├── PlayerForm.jsx
-    ├── PlayerSearch.jsx
-    ├── LoginForm.jsx
-    ├── SignupForm.jsx
-    ├── ResultCard.jsx
-    └── ResultList.jsx
+Learned that state should live in the component that actually needs to own it.
 
-    api/
-    ├── apiClient.js
-    ├── playerApi.js
-    └── authApi.js
+### Callback props
 
-    App.jsx
+Learned how callback props allow child components to send data back to the parent.
 
-    The main lesson:
+### API organization
 
-    Components handle UI and local state, API modules handle domain-specific requests, and apiClient handles shared communication with the backend.
+Separated frontend API functions into:
 
-Day 23 — Frontend Architecture & UI Design
+playerApi.js
+authApi.js
 
-    Learned:
+Created a centralized API client for common functionality such as:
 
-    Today I focused on turning my frontend from a developer prototype into a more structured and polished application.
+authentication tokens
+request headers
+fetch()
+JSON parsing
+centralized error handling
 
-    Component Architecture
+Improved logout behavior by clearing user-specific React state.
 
-    I learned how to break my React application into components based on responsibility:
+### Day 22 Architecture
 
-    App
+components/
+├── PlayerForm.jsx
+├── PlayerSearch.jsx
+├── LoginForm.jsx
+├── SignupForm.jsx
+├── ResultCard.jsx
+└── ResultList.jsx
+
+api/
+├── apiClient.js
+├── playerApi.js
+└── authApi.js
+
+App.jsx
+
+### Main lesson
+
+Components handle UI and local state.
+
+API modules handle domain-specific requests.
+
+The API client handles shared communication with the backend.
+
+-----------------------------------------------------------------------------------
+
+## Day 23 — Frontend Architecture & UI Design
+
+**Learned:**
+
+Focused on turning the frontend from a developer prototype into a more structured and polished application.
+
+### Component Architecture
+
+Learned how to break the React application into components based on responsibility:
+
+App
+├── Navbar
+├── AuthScreen
+│   ├── LoginForm
+│   └── SignupForm
+└── Dashboard
+    ├── PlayerForm
+    ├── PlayerSearch
+    └── ResultList
+        └── ResultCard
+
+Learned that the component tree represents which components render other components. It does not necessarily represent the folder structure.
+
+### State Ownership
+
+Learned to keep state in the component that actually needs to own it.
+
+For example:
+
+PlayerForm
+→ player state
+
+PlayerSearch
+→ search name and grade filter
+
+App
+→ results, loading, errors, authenticated user
+
+This reduced unnecessary props and made the application easier to maintain.
+
+### UI Design
+
+Added:
+
+Dashboard layout
+Player analysis card
+Search/filter card
+Professional result cards
+Consistent spacing
+Responsive layouts
+Button hover states
+Input focus states
+CSS variables
+
+### Responsive Design
+
+Learned how media queries can change layouts for smaller screens.
+
+For example, search controls and statistics can change from horizontal layouts to vertical layouts on mobile-sized screens.
+
+### Day 23 Result
+
+The application now has:
+
+Organized React components
+Clear state ownership
+Authentication UI
+Dashboard UI
+Search and filtering UI
+Styled player analysis cards
+Responsive design
+Consistent visual design system
+
+The application is no longer just functional — it is starting to look and behave like a real product.
+
+-----------------------------------------------------------------------------------
+
+## Day 24 — Better UX
+
+**Learned:**
+
+### Loading UX
+
+Disabled buttons while requests are running.
+
+Changed button text to communicate progress.
+
+Prevented duplicate API submissions.
+
+### Success & Error Feedback
+
+Added separate success and error states.
+
+Learned how backend HTTP errors become JavaScript errors through the API layer.
+
+Displayed meaningful feedback to the user.
+
+### Delete UX
+
+Added confirmation before destructive actions.
+
+Added success/error feedback after deletion.
+
+### Update UX
+
+Built an edit mode for `ResultCard`.
+
+Allowed users to edit:
+
+name
+points
+assists
+rebounds
+
+Learned that frontend and backend data structures must match.
+
+Kept the edit form open when an update fails.
+
+Recalculated the player's analysis after changing stats.
+
+### Empty States
+
+Created a reusable:
+
+EmptyState
+
+component.
+
+Learned that an empty screen should guide the user rather than simply say:
+
+"nothing exists"
+
+### Most important Day 24 lesson
+
+Moved from thinking:
+
+"Does the feature work?"
+
+to:
+
+"What does the user experience when they use the feature?"
+
+-----------------------------------------------------------------------------------
+
+## Day 25 — Frontend Architecture & Page Structure
+
+**Learned:**
+
+Improved the React frontend architecture by separating the application into pages and reusable components.
+
+### Pages vs Components
+
+Learned the difference between a **page** and a **component**.
+
+A page represents a full screen or destination in the application.
+
+A component represents a reusable piece of UI inside a page.
+
+Example:
+
+HistoryPage
+├── PlayerSearch
+└── ResultList
+    └── ResultCard
+
+### Page Structure
+
+Created:
+
+pages/
+├── AuthPage.jsx
+├── DashboardPage.jsx
+├── HistoryPage.jsx
+└── ProfilePage.jsx
+
+### Authentication Architecture
+
+Separated authentication into:
+
+AuthPage
+└── AuthScreen
+    ├── LoginForm
+    └── SignupForm
+
+`AuthScreen` controls whether Login or Signup is displayed.
+
+`LoginForm` owns its login form state.
+
+`SignupForm` owns its signup form state.
+
+### Conditional Rendering
+
+Learned how React can conditionally render different UI based on state.
+
+Example:
+
+mode === "login"
+    ↓
+LoginForm
+
+mode === "signup"
+    ↓
+SignupForm
+
+### Application Navigation
+
+Created a temporary page-navigation system using React state:
+
+currentPage
+
+The application can switch between:
+
+dashboard
+history
+profile
+
+### Authentication State
+
+Used the authenticated user to determine which part of the application should be displayed:
+
+user === null
+    ↓
+AuthPage
+
+user exists
+    ↓
+Main Application
+
+### MainApp
+
+Created a `MainApp` component to separate the logged-in application UI from `App.jsx`.
+
+Architecture:
+
+App
+│
+├── AuthPage
+│   └── AuthScreen
+│       ├── LoginForm
+│       └── SignupForm
+│
+└── MainApp
     ├── Navbar
-    ├── AuthScreen
-    │   ├── LoginForm
-    │   └── SignupForm
-    └── Dashboard
-        ├── PlayerForm
-        ├── PlayerSearch
-        └── ResultList
-            └── ResultCard
+    └── Pages
+        ├── DashboardPage
+        │   └── PlayerForm
+        │
+        ├── HistoryPage
+        │   ├── PlayerSearch
+        │   └── ResultList
+        │       └── ResultCard
+        │
+        └── ProfilePage
 
-    I learned that the component tree represents which components render other components. It does not necessarily represent the folder structure.
+### Separation of Concerns
 
-    State Ownership
+Learned that different parts of the application should have clear responsibilities.
 
-    I learned to keep state in the component that actually needs to own it.
+App
+→ Global application state and coordination
 
-    For example:
+Pages
+→ Full application screens
 
-    PlayerForm → player state
-    PlayerSearch → search name and grade filter
-    App → results, loading, errors, and authenticated user
+Components
+→ Reusable UI pieces
 
-    This helped reduce unnecessary props and made the application easier to maintain.
+API modules
+→ Backend communication
 
-    UI Design
+### Day 25 Result
 
-    I added:
+The frontend now has a more scalable architecture with:
 
-    Dashboard layout
-    Player analysis card
-    Search/filter card
-    Professional result cards
-    Consistent spacing
-    Responsive layouts
-    Button hover states
-    Input focus states
-    CSS variables for a consistent design system
+Authentication page
+Dashboard page
+History page
+Profile page
+Reusable components
+Page navigation
+Clear state ownership
+Separated authentication forms
+Main application shell
 
-    I also learned how CSS flex, grid, max-width, media queries, and CSS variables help create a cleaner UI.
+### Most important Day 25 lesson
 
-    Responsive Design
+Architecture should solve complexity rather than create unnecessary complexity.
 
-    I learned how to use media queries to change the layout for smaller screens.
+The goal is not to create as many files or folders as possible.
 
-    For example, the search controls and statistics change from horizontal layouts to vertical layouts on mobile-sized screens.
+The goal is to give each part of the application a **clear responsibility**.
 
-    Day 23 Result
-
-    My application now has:
-
-    Organized React components
-    Clear state ownership
-    Authentication UI
-    Dashboard UI
-    Search and filtering UI
-    Styled player analysis cards
-    Responsive design
-    A consistent visual design system
-
-    The application is no longer just functional — it is starting to look and behave like a real product.
-
-Day 24 — Better UX
-
-    Learned:
-
-    Loading UX:
-
-    Disable buttons while requests are running.
-
-    Change button text to communicate progress.
-
-    Prevent duplicate API submissions.
-
-    Success & error feedback:
-
-    Added separate success and error states.
-
-    Learned how backend HTTP errors become JavaScript errors through your API layer.
-
-    Displayed meaningful feedback to the user.
-
-    Delete UX:
-
-    Added confirmation before destructive actions.
-
-    Added success/error feedback after deletion.
-
-    Update UX:
-
-    Built an edit mode for ResultCard.
-
-    Allowed users to edit name, points, assists, and rebounds.
-
-    Learned that frontend and backend data structures must match.
-
-    Kept the edit form open when an update fails.
-
-    Recalculated the player's analysis after changing stats.
-
-    Empty states:
-
-    Created a reusable EmptyState component.
-
-    Learned that an empty screen should guide the user rather than simply say "nothing exists."
-    
-    Most important Day 24 lesson
-
-    You moved from thinking:
-
-    "Does the feature work?"
-
-    to:
-
-    "What does the user experience when they use the feature?"
+-----------------------------------------------------------------------------------
