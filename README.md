@@ -911,3 +911,297 @@ The goal is not to create as many files or folders as possible.
 The goal is to give each part of the application a **clear responsibility**.
 
 -----------------------------------------------------------------------------------
+
+## Day 26 — Custom React Hooks & State Management
+
+### 🎯 Goal
+
+The goal of Day 26 was to learn what **React Hooks** are and use **custom hooks** to organize related state and behavior.
+
+As the application grew, `App.jsx` was becoming responsible for authentication, player operations, loading states, errors, and UI state.
+
+The goal was to separate these responsibilities without creating unnecessary complexity.
+
+---
+
+### 🪝 What Is a React Hook?
+
+A React Hook allows a component to use React features such as state and effects.
+
+For example:
+
+const [name, setName] = useState("");
+
+`useState` is a built-in React Hook.
+
+A **custom hook** is a JavaScript function that uses React Hooks to package related stateful behavior into a reusable unit.
+
+Custom hooks normally begin with `use`.
+
+Examples:
+
+useAuth()
+usePlayers()
+
+
+The important idea learned was:
+
+> A custom hook packages related state + behavior so components don't have to manage all of the implementation details themselves.
+
+---
+
+### 🔐 Creating `useAuth()`
+
+Authentication logic was moved out of `App.jsx` and into:
+
+hooks/
+└── useAuth.js
+
+`useAuth()` is responsible for authentication-related state and behavior:
+
+useAuth()
+├── user
+├── loading
+├── error
+├── login()
+├── signup()
+└── logout()
+
+The application can then access authentication functionality with:
+
+const {
+    user,
+    loading,
+    error,
+    login,
+    signup,
+    logout
+} = useAuth();
+
+This allows `App.jsx` to use authentication without needing to contain all of the authentication implementation.
+
+---
+
+### 👥 Creating `usePlayers()`
+
+Player functionality was also grouped into a custom hook:
+
+hooks/
+├── useAuth.js
+└── usePlayers.js
+
+`usePlayers()` manages player-related state and operations:
+
+usePlayers()
+├── results
+├── loading
+├── error
+├── analyze()
+├── loadHistory()
+├── deletePlayer()
+├── updatePlayerData()
+└── search()
+
+This removed player-management logic from `App.jsx`.
+
+---
+
+### 📊 Player Data Flow
+
+The player operations now follow this structure:
+
+React Component
+      ↓
+     App
+      ↓
+ usePlayers()
+      ↓
+ playerApi
+      ↓
+ Express Backend
+      ↓
+ MongoDB
+
+For example, analyzing a player:
+
+PlayerForm
+    ↓
+onAnalyze()
+    ↓
+App
+    ↓
+analyze()
+    ↓
+usePlayers
+    ↓
+analyzePlayer()
+    ↓
+Backend
+
+The hook manages the player operation and its related state.
+
+---
+
+### ⚠️ Separating Different Types of State
+
+An important lesson was learning that not all state belongs in the same place.
+
+Authentication state belongs to `useAuth()`:
+
+useAuth()
+├── user
+├── auth loading
+└── auth error
+
+Player-operation state belongs to `usePlayers()`:
+
+usePlayers()
+├── results
+├── player loading
+└── player error
+
+General UI state remains in `App.jsx`:
+
+App
+├── success
+└── currentPage
+
+For example:
+
+setSuccess("Player analyzed successfully! 🏀");
+
+The success message is a UI concern rather than something that needs to be owned by the player hook.
+
+---
+
+### 🧠 Important Hook Lesson
+
+A custom hook should not be created simply because there are several functions.
+
+Instead, ask:
+
+> **"Do I have related state and behavior that would be easier to manage independently?"**
+
+For this project:
+
+**Authentication** is a cohesive group:
+
+user + login + signup + logout
+
+Therefore:
+
+useAuth()
+
+makes sense.
+
+**Player management** is another cohesive group:
+
+results + analyze + delete + update + search
+
+Therefore:
+
+usePlayers()
+
+makes sense.
+
+This is an important architectural principle:
+
+> **Use abstraction to solve complexity, not to create complexity.**
+
+---
+
+### 🏗️ App Architecture After Day 26
+
+The application now has a cleaner structure:
+
+App.jsx
+│
+├── useAuth()
+│   ├── user
+│   ├── loading
+│   ├── error
+│   ├── login()
+│   ├── signup()
+│   └── logout()
+│
+├── usePlayers()
+│   ├── results
+│   ├── loading
+│   ├── error
+│   ├── analyze()
+│   ├── loadHistory()
+│   ├── deletePlayer()
+│   ├── updatePlayerData()
+│   └── search()
+│
+├── success
+└── currentPage
+
+This means `App.jsx` is becoming more of a **coordinator** rather than a place where every operation is implemented.
+
+---
+
+### 🔄 Before vs After
+
+Before Day 26:
+
+App.jsx
+├── Authentication logic
+├── Player logic
+├── API calls
+├── Loading state
+├── Error state
+├── Results
+└── UI state
+
+After Day 26:
+
+App.jsx
+├── useAuth()
+├── usePlayers()
+├── success
+└── currentPage
+
+The responsibilities are now grouped according to what they actually do.
+
+---
+
+### 🚀 Why This Matters for the Project
+
+The project is becoming easier to extend as more functionality is added.
+
+Future features can follow the same pattern:
+
+Feature
+   ↓
+Related state
+   ↓
+Related behavior
+   ↓
+Custom hook when appropriate
+
+This will be especially useful as the project moves toward the upcoming **AI-powered player analysis** functionality.
+
+---
+
+### 📌 Day 26 Summary
+
+Day 26 focused on **React Hooks and custom hooks**.
+
+I learned:
+
+* What React Hooks are
+* How `useState` is a React Hook
+* What custom hooks are
+* Why custom hooks begin with `use`
+* How to create `useAuth()`
+* How to create `usePlayers()`
+* How hooks can contain related state and behavior
+* How to separate authentication state from player state
+* How to keep general UI state separate
+* How custom hooks make `App.jsx` easier to understand
+* When abstraction is useful and when it creates unnecessary complexity
+
+The application now has a cleaner separation between **authentication, player management, and UI coordination**
+
+-------------------------------------------------------------------------------------

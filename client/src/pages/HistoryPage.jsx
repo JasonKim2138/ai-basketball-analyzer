@@ -8,7 +8,8 @@ function HistoryPage({
     onDelete,
     onUpdate,
     loading,
-    error
+    error,
+    success
 }) {
     return (
         <main>
@@ -26,6 +27,12 @@ function HistoryPage({
             {error && (
                 <p className="error-message">
                     {error}
+                </p>
+            )}
+
+            {success && (
+                <p className="success-message">
+                    {success}
                 </p>
             )}
 

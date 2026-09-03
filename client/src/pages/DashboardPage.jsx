@@ -1,6 +1,6 @@
 import PlayerForm from "../components/PlayerForm";
 
-function DashboardPage({ onAnalyze, loading }) {
+function DashboardPage({ onAnalyze, loading, success }) {
     return (
         <main>
             <h2>Analyze Player</h2>

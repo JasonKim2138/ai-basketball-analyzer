@@ -14,7 +14,8 @@ function MainApp({
     onDelete,
     onUpdate,
     loading,
-    error
+    error,
+    success
 }) {
 
     return (
@@ -41,6 +42,7 @@ function MainApp({
                     onUpdate={onUpdate}
                     loading={loading}
                     error={error}
+                    success={success}
                 />
             )}
 

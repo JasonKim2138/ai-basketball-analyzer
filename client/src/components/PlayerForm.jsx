@@ -87,7 +87,7 @@ function PlayerForm({ onAnalyze, loading }) {
             >
                 {loading ? "Analyzing..." : "Analyze Player 🏀"}
             </button>
-
+            
         </div>
     );
 }
