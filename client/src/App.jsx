@@ -102,6 +102,10 @@ function App() {
     // UI
     // -------------------------
 
+    if (authLoading) {
+    return <div>Checking authentication...</div>;
+    }
+
     return (
         <div>
 
