@@ -37,6 +37,15 @@ function App() {
     // PLAYER FUNCTIONS
     // -------------------------
 
+  async function handleAnalyze(player) {
+        setSuccess("");
+
+        try {
+            await analyze(player);
+            setSuccess("Player analyzed successfully! 🏀");
+        } catch (error) {
+        }
+    }
 
   async function handleDelete(id) {
       const confirmed = window.confirm(
@@ -126,7 +135,7 @@ function App() {
                     currentPage={currentPage}
                     onNavigate={setCurrentPage}
 
-                    onAnalyze={analyze}
+                    onAnalyze={handleAnalyze}
                     onSearch={handleSearch}
 
                     results={results}

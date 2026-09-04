@@ -31,6 +31,7 @@ function MainApp({
                 <DashboardPage
                     onAnalyze={onAnalyze}
                     loading={loading}
+                    success={success}
                 />
             )}
 

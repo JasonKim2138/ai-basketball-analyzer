@@ -1205,3 +1205,453 @@ I learned:
 The application now has a cleaner separation between **authentication, player management, and UI coordination**
 
 -------------------------------------------------------------------------------------
+
+# 🏀 Day 27 — Frontend State & Data Flow
+
+## 🎯 Goal
+
+Understand how data and state move through a React application, where state should live, and how components communicate without mixing UI responsibilities with data-management logic.
+
+By the end of Day 27, I should understand:
+
+* Local state
+* Shared state
+* Server/API data
+* State ownership
+* Lifting state up
+* Props
+* Callbacks
+* Prop drilling
+* Separation of responsibilities
+* Source of truth
+
+---
+
+# 1. Local State
+
+**Local state** is state that is only needed by one component.
+
+Example:
+
+const [player, setPlayer] = useState({
+    name: "",
+    points: "",
+    assists: "",
+    rebounds: ""
+});
+
+In the basketball analyzer, this belongs in `PlayerForm` because the form needs to know what the user is currently typing.
+
+### Think:
+
+> "What is this component currently doing?"
+
+Examples:
+
+* Input values
+* Whether a modal is open
+* Temporary edit values
+* A dropdown being opened/closed
+
+---
+
+# 2. Shared State
+
+**Shared state** is state that needs to be accessed or affected by multiple components.
+
+Example:
+
+const [success, setSuccess] = useState("");
+
+`DashboardPage` and `HistoryPage` can both cause success messages, so keeping `success` in `App` makes sense.
+
+### Think:
+
+> "What information does more than one part of my UI need?"
+
+---
+
+# 3. Server/API Data
+
+**Server data** is information that comes from or is saved to the backend.
+
+For example:
+
+React
+  ↓
+POST /player
+  ↓
+Express
+  ↓
+MongoDB
+
+When player analyses are loaded:
+
+MongoDB
+  ↓
+Backend
+  ↓
+GET /player
+  ↓
+React
+
+The `results` variable in React may contain server data.
+
+Important:
+
+> `results` is React state, but the data inside it originally comes from the server.
+
+MongoDB is the source of truth for the persisted player analyses.
+
+---
+
+# 4. State Ownership
+
+State should live in the component that is responsible for managing it.
+
+Examples:
+
+| State                       | Owner         |
+| --------------------------- | ------------- |
+| Player form inputs          | `PlayerForm`  |
+| Edit modal temporary values | `ResultCard`  |
+| Player results              | `usePlayers`  |
+| Authentication/user         | `useAuth`     |
+| Success message             | `App`         |
+| Current page                | `App` for now |
+
+---
+
+# 5. Lifting State Up
+
+**Lifting state up** means moving state from a child component into the closest parent that needs to share that state with other components.
+
+Example:
+
+DashboardPage
+      ↓
+PlayerForm
+
+HistoryPage
+      ↓
+ResultList
+
+If both Dashboard and History need the same piece of state, that state may need to move higher:
+
+             App
+              │
+        shared state
+          ↙       ↘
+ Dashboard       History
+
+### Rule
+
+> Put shared state in the **lowest common ancestor** of the components that need it.
+
+For example, `success` belongs in `App` because multiple areas of the application can trigger it.
+
+---
+
+# 6. Props
+
+**Props** allow a parent component to pass data to a child component.
+
+Example:
+
+<MainApp user={user} />
+
+The child receives it:
+
+function MainApp({ user }) {
+    return <h1>Welcome {user.email}</h1>;
+}
+
+Data flows **down** the component tree:
+
+Parent
+  │
+  │ props
+  ↓
+Child
+
+### Important rule
+
+> Data flows down through props.
+
+---
+
+# 7. Callbacks
+
+A parent can also give a child a function.
+
+Example:
+
+<ResultCard onDelete={handleDelete} />
+
+The child can then call:
+
+onDelete(id);
+
+The actual deletion logic remains in the parent/usePlayers layer.
+
+ResultCard
+    ↓
+onDelete(id)
+    ↓
+App
+    ↓
+usePlayers
+    ↓
+API
+    ↓
+Backend
+    ↓
+MongoDB
+
+The child isn't "sending data back up" through props.
+
+Instead:
+
+> The child is calling a function that the parent gave it.
+
+---
+
+# 8. Why We Use `onUpdate` Instead of `setResults`
+
+For example:
+
+<ResultCard onUpdate={handleUpdate} />
+
+is better than:
+
+<ResultCard setResults={setResults} />
+
+because `ResultCard` shouldn't need to know how the application's player data is managed.
+
+`ResultCard` should focus on:
+
+* Displaying the player
+* Handling the edit UI
+* Collecting the edited values
+* Calling `onUpdate()`
+
+The parent/data layer handles:
+
+* Updating state
+* Calling the API
+* Handling errors
+* Communicating with the backend
+
+This creates **separation of responsibilities**.
+
+---
+
+# 9. Prop Drilling
+
+**Prop drilling** happens when data needs to travel through several components that don't actually need the data themselves.
+
+Example:
+
+App
+ ↓ user
+MainApp
+ ↓ user
+HistoryPage
+ ↓ user
+ResultList
+ ↓ user
+ResultCard
+
+If only `ResultCard` needs `user`, then `MainApp`, `HistoryPage`, and `ResultList` are just passing the prop along.
+
+That is prop drilling.
+
+### Important distinction
+
+Prop drilling is not necessarily bad.
+
+The problem is when:
+
+> Intermediate components have to receive and forward props they don't actually use.
+
+Context can eventually help with this, but it is not necessary for the current project yet.
+
+---
+
+# 10. Local State vs Shared State vs Server Data
+
+A useful mental model:
+
+LOCAL STATE
+"What is this component doing?"
+
+SHARED STATE
+"What does multiple UI need to know?"
+
+SERVER DATA
+"What does the backend/database know?"
+
+Example:
+
+| Type   | Basketball Analyzer example    |
+| ------ | ------------------------------ |
+| Local  | User is typing `"Curry"`       |
+| Local  | Edit modal is open             |
+| Shared | Success message                |
+| Shared | Current authenticated user     |
+| Server | Saved player analyses          |
+| Server | Player grade stored in MongoDB |
+
+---
+
+# 11. React State Can Contain Server Data
+
+This is an important distinction.
+
+Suppose:
+
+const [results, setResults] = useState([]);
+
+`results` is technically **React state**.
+
+But after:
+
+GET /player
+    ↓
+Backend
+    ↓
+MongoDB
+    ↓
+React
+    ↓
+setResults(data)
+
+the contents of `results` represent server data.
+
+So:
+
+> **Where data is stored in React and where the data originally comes from are two different ideas.**
+
+---
+
+# 12. Source of Truth
+
+A **source of truth** is the place that should be considered authoritative for a piece of information.
+
+For your project:
+
+### Authentication
+
+useAuth
+   ↓
+user
+
+`useAuth` manages the current authentication state in React.
+
+The JWT token is persisted in `localStorage`.
+
+### Player analyses
+
+MongoDB
+   ↓
+source of truth for saved analyses
+
+React's `results` is a client-side representation of that data.
+
+---
+
+# 13. Basketball Analyzer Data Flow
+
+### Analyze Player
+
+USER
+ ↓
+PlayerForm
+ ↓
+onAnalyze(player)
+ ↓
+App
+ ↓
+usePlayers.analyze()
+ ↓
+playerApi
+ ↓
+POST /player
+ ↓
+Express Backend
+ ↓
+Controller
+ ↓
+Service
+ ↓
+MongoDB
+
+### Display Results
+
+MongoDB
+ ↓
+Backend
+ ↓
+GET /player
+ ↓
+usePlayers
+ ↓
+results
+ ↓
+ResultList
+ ↓
+ResultCard
+
+### Update Player
+
+USER
+ ↓
+ResultCard
+ ↓
+onUpdate(id, updatedData)
+ ↓
+App
+ ↓
+usePlayers.updatePlayerData()
+ ↓
+playerApi
+ ↓
+PUT /player/:id
+ ↓
+Backend
+ ↓
+MongoDB
+
+---
+
+# 🧠 Day 27 Rules to Remember
+
+### Rule 1
+
+> **State belongs where it is needed.**
+
+### Rule 2
+
+> **If multiple components need the same state, lift it up to their lowest common ancestor.**
+
+### Rule 3
+
+> **Data flows down through props.**
+
+### Rule 4
+
+> **Children can call callback functions provided by parents.**
+
+### Rule 5
+
+> **UI components should not directly handle backend/data-management logic.**
+
+### Rule 6
+
+> **Avoid unnecessary prop drilling.**
+
+### Rule 7
+
+> **Keep one source of truth instead of creating multiple independent copies of the same state.**
+
+---------------------------------------------------------------------------------------

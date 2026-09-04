@@ -9,6 +9,12 @@ function DashboardPage({ onAnalyze, loading, success }) {
                 onAnalyze={onAnalyze}
                 loading={loading}
             />
+
+            {success && (
+                <p className="success-message">
+                    {success}
+                </p>
+            )}
         </main>
     );
 }
