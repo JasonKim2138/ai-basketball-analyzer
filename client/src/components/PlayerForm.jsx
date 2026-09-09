@@ -8,8 +8,66 @@ function PlayerForm({ onAnalyze, loading }) {
         rebounds: ""
     });
 
+    const [error, setError] = useState("");
+
+    function handleChange(e) {
+        const { name, value } = e.target;
+
+        setPlayer({
+            ...player,
+            [name]: value
+        });
+    }
+
+    function validatePlayer(player) {
+        if (!player.name.trim()) {
+            return "Player name is required.";
+        }
+
+        if (
+            player.points === "" ||
+            player.assists === "" ||
+            player.rebounds === ""
+        ) {
+            return "Please enter all player stats.";
+        }
+
+        if (
+            Number(player.points) < 0 ||
+            Number(player.assists) < 0 ||
+            Number(player.rebounds) < 0
+        ) {
+            return "Stats cannot be negative.";
+        }
+
+        return "";
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+
+        const validationError = validatePlayer(player);
+
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
+        setError("");
+
+        onAnalyze({
+            ...player,
+            points: Number(player.points),
+            assists: Number(player.assists),
+            rebounds: Number(player.rebounds)
+        });
+    }
+
     return (
-        <div className="player-form-card">
+        <form
+            className="player-form-card"
+            onSubmit={handleSubmit}
+        >
 
             <h3>Analyze a Player</h3>
 
@@ -17,14 +75,11 @@ function PlayerForm({ onAnalyze, loading }) {
                 <label>Player Name</label>
 
                 <input
+                    name="name"
+                    type="text"
                     placeholder="e.g. Stephen Curry"
                     value={player.name}
-                    onChange={(e) =>
-                        setPlayer({
-                            ...player,
-                            name: e.target.value
-                        })
-                    }
+                    onChange={handleChange}
                 />
             </div>
 
@@ -34,15 +89,11 @@ function PlayerForm({ onAnalyze, loading }) {
                     <label>Points</label>
 
                     <input
+                        name="points"
                         type="number"
                         placeholder="30"
                         value={player.points}
-                        onChange={(e) =>
-                            setPlayer({
-                                ...player,
-                                points: e.target.value
-                            })
-                        }
+                        onChange={handleChange}
                     />
                 </div>
 
@@ -50,15 +101,11 @@ function PlayerForm({ onAnalyze, loading }) {
                     <label>Assists</label>
 
                     <input
+                        name="assists"
                         type="number"
                         placeholder="10"
                         value={player.assists}
-                        onChange={(e) =>
-                            setPlayer({
-                                ...player,
-                                assists: e.target.value
-                            })
-                        }
+                        onChange={handleChange}
                     />
                 </div>
 
@@ -68,27 +115,29 @@ function PlayerForm({ onAnalyze, loading }) {
                 <label>Rebounds</label>
 
                 <input
+                    name="rebounds"
                     type="number"
                     placeholder="10"
                     value={player.rebounds}
-                    onChange={(e) =>
-                        setPlayer({
-                            ...player,
-                            rebounds: e.target.value
-                        })
-                    }
+                    onChange={handleChange}
                 />
             </div>
 
+            {error && (
+                <p className="form-error">
+                    {error}
+                </p>
+            )}
+
             <button
+                type="submit"
                 className="analyze-button"
-                onClick={() => onAnalyze(player)}
                 disabled={loading}
             >
                 {loading ? "Analyzing..." : "Analyze Player 🏀"}
             </button>
             
-        </div>
+        </form>
     );
 }
 

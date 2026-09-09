@@ -1655,3 +1655,571 @@ MongoDB
 > **Keep one source of truth instead of creating multiple independent copies of the same state.**
 
 ---------------------------------------------------------------------------------------
+
+# Day 28 — React Forms & Controlled Components
+
+## 🎯 Goal
+
+Learn how React forms work using **controlled components**, object state, form submission, validation, and proper data conversion before sending information to the backend.
+
+The goal was to make the player analysis form behave like a real React application rather than relying on direct DOM behavior.
+
+---
+
+# 1. Controlled Components
+
+A controlled component is an input whose value is controlled by React state.
+
+Example:
+
+const [name, setName] = useState("");
+
+<input
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+/>
+
+The important mental model is:
+
+> **`onChange` changes state. `value` reflects state.**
+
+### Data flow
+
+User types "Curry"
+        ↓
+onChange runs
+        ↓
+setName("Curry")
+        ↓
+React state updates
+        ↓
+name === "Curry"
+        ↓
+value={name}
+        ↓
+Input displays "Curry"
+
+React becomes the source of truth for the input.
+
+---
+
+# 2. `e.target.value`
+
+For HTML inputs, `e.target.value` normally returns a **string**, even when the input is:
+
+<input type="number" />
+
+For example:
+
+e.target.value
+
+could be:
+
+"30"
+
+rather than:
+
+30
+
+This is important when sending numerical data to the backend.
+
+---
+
+# 3. Why Keep Input Values as Strings?
+
+During typing, input values should generally remain strings.
+
+For example:
+
+points: e.target.value
+
+This allows the user to temporarily have:
+
+""
+
+while editing the field.
+
+If we converted the value immediately:
+
+Number(e.target.value)
+
+then:
+
+Number("")
+
+becomes:
+
+0
+
+That could incorrectly treat an empty field as an actual statistic of zero.
+
+Therefore:
+
+While typing → keep strings
+On submit → convert to numbers
+
+---
+
+# 4. Using One Object for Form State
+
+Instead of creating separate state variables:
+
+const [name, setName] = useState("");
+const [points, setPoints] = useState("");
+const [assists, setAssists] = useState("");
+const [rebounds, setRebounds] = useState("");
+
+the form uses one object:
+
+const [player, setPlayer] = useState({
+    name: "",
+    points: "",
+    assists: "",
+    rebounds: ""
+});
+
+This keeps related form data together.
+
+---
+
+# 5. Updating Object State
+
+When updating one property, the existing object needs to be copied.
+
+setPlayer({
+    ...player,
+    points: e.target.value
+});
+
+The spread operator:
+
+...player
+
+copies the existing properties.
+
+Then:
+
+points: e.target.value
+
+replaces the old points value.
+
+Without the spread:
+
+setPlayer({
+    points: e.target.value
+});
+
+the other properties would be removed.
+
+### Important rule
+
+Never directly mutate React state:
+
+player.points = "30";
+
+Instead, create a new object through the setter:
+
+setPlayer({
+    ...player,
+    points: "30"
+});
+
+---
+
+# 6. Generic Form Handler
+
+Instead of writing a separate `onChange` handler for every input, the form uses the input's `name` attribute.
+
+Example:
+
+<input
+    name="points"
+    value={player.points}
+    onChange={handleChange}
+/>
+
+Then:
+
+function handleChange(e) {
+    const { name, value } = e.target;
+
+    setPlayer({
+        ...player,
+        [name]: value
+    });
+}
+
+Now the same function can handle every field.
+
+For example:
+
+name="points"
+      ↓
+[name]
+      ↓
+points: value
+
+and:
+
+name="assists"
+      ↓
+[name]
+      ↓
+assists: value
+
+---
+
+# 7. Computed Property Names
+
+This syntax:
+
+[name]: value
+
+is different from:
+
+name: value
+
+### `name: value`
+
+Creates a property literally called `name`.
+
+{
+    name: "Curry"
+}
+
+### `[name]: value`
+
+Uses the value stored inside the `name` variable as the property name.
+
+const name = "assists";
+const value = "7";
+
+{
+    [name]: value
+}
+
+produces:
+
+{
+    assists: "7"
+}
+
+This is what allows one generic handler to update different form fields.
+
+---
+
+# 8. Form Submission
+
+The form was changed from relying on a button's `onClick` to using:
+
+<form onSubmit={handleSubmit}>
+
+The button becomes:
+
+<button type="submit">
+    Analyze Player 🏀
+</button>
+
+This is better because the form now has one submission path.
+
+The user can:
+
+* click the button
+* press Enter while inside the form
+
+Both trigger:
+
+handleSubmit()
+
+---
+
+# 9. `event.preventDefault()`
+
+Inside the submit handler:
+
+function handleSubmit(e) {
+    e.preventDefault();
+
+    // custom React logic
+}
+
+Normally, the browser has a default behavior when submitting an HTML form.
+
+`preventDefault()` stops that browser behavior so React can handle the submission itself.
+
+User submits form
+       ↓
+onSubmit
+       ↓
+preventDefault()
+       ↓
+React handles submission
+       ↓
+API request
+
+---
+
+# 10. Frontend Validation
+
+Validation was added before sending the player to the backend.
+
+The form checks:
+
+### Player name
+
+if (!player.name.trim()) {
+    return "Player name is required.";
+}
+
+### Missing statistics
+
+if (
+    player.points === "" ||
+    player.assists === "" ||
+    player.rebounds === ""
+) {
+    return "Please enter all player stats.";
+}
+
+### Negative statistics
+
+if (
+    Number(player.points) < 0 ||
+    Number(player.assists) < 0 ||
+    Number(player.rebounds) < 0
+) {
+    return "Stats cannot be negative.";
+}
+
+If everything is valid:
+
+return "";
+
+An empty string means there is no validation error.
+
+---
+
+# 11. Separating Validation From Submission
+
+Validation was separated into its own function:
+
+function validatePlayer(player) {
+    // validation logic
+}
+
+Then the submit handler uses it:
+
+function handleSubmit(e) {
+    e.preventDefault();
+
+    const validationError = validatePlayer(player);
+
+    if (validationError) {
+        setError(validationError);
+        return;
+    }
+
+    setError("");
+
+    onAnalyze({
+        ...player,
+        points: Number(player.points),
+        assists: Number(player.assists),
+        rebounds: Number(player.rebounds)
+    });
+}
+
+This makes the code easier to understand:
+
+handleSubmit
+     ↓
+validatePlayer()
+     ↓
+Valid?
+ ├── No → show error + stop
+ │
+ └── Yes → convert numbers + submit
+
+---
+
+# 12. Why Frontend Validation Isn't Enough
+
+Frontend validation improves the user experience, but it cannot be trusted as the only validation layer.
+
+A user can bypass the frontend and send a request directly to the backend.
+
+Therefore the application uses two layers:
+
+Frontend validation
+        ↓
+User-friendly feedback
+        ↓
+API request
+        ↓
+Backend validation
+        ↓
+Database
+
+### Frontend
+
+Responsible for catching obvious problems quickly.
+
+### Backend
+
+Remains the authoritative validation layer.
+
+This is an important real-world software engineering principle.
+
+---
+
+# 13. Separating Form Errors From API Errors
+
+The `PlayerForm` has its own validation error state:
+
+const [error, setError] = useState("");
+
+This handles errors such as:
+
+"Player name is required."
+"Please enter all player stats."
+"Stats cannot be negative."
+
+The existing `playerError` coming from `usePlayers` is different.
+
+That error represents problems with:
+
+* API requests
+* backend responses
+* network failures
+* server/database problems
+
+Therefore:
+
+PlayerForm error
+        ↓
+Frontend validation
+
+playerError
+        ↓
+API/backend problems
+
+They should remain separate because they come from different layers of the application.
+
+---
+
+# 14. Converting Numbers Before Submission
+
+The form keeps values as strings while the user is typing.
+
+Before sending the player to the backend:
+
+onAnalyze({
+    ...player,
+    points: Number(player.points),
+    assists: Number(player.assists),
+    rebounds: Number(player.rebounds)
+});
+
+Now the backend receives:
+
+{
+    name: "Stephen Curry",
+    points: 30,
+    assists: 7,
+    rebounds: 5
+}
+
+instead of:
+
+{
+    name: "Stephen Curry",
+    points: "30",
+    assists: "7",
+    rebounds: "5"
+}
+
+---
+
+# 15. Final PlayerForm Flow
+
+The completed form follows this architecture:
+
+User enters player information
+            ↓
+React state
+            ↓
+Controlled inputs
+            ↓
+User submits form
+            ↓
+preventDefault()
+            ↓
+validatePlayer()
+            ↓
+       Valid?
+       /    \
+     No      Yes
+     ↓        ↓
+ Show error   Convert strings → numbers
+              ↓
+           onAnalyze()
+              ↓
+          usePlayers
+              ↓
+          playerApi
+              ↓
+           Backend
+
+---
+
+# 16. What I Learned
+
+By the end of Day 28, I learned how to:
+
+* Build controlled React inputs
+* Use `value` and `onChange`
+* Understand `e.target.value`
+* Manage multiple form fields with one object
+* Use the spread operator for immutable state updates
+* Use computed property names with `[name]`
+* Create reusable form change handlers
+* Submit forms using `onSubmit`
+* Use `event.preventDefault()`
+* Keep form values as strings while typing
+* Convert values with `Number()` during submission
+* Create frontend validation
+* Separate validation logic from submission logic
+* Understand why backend validation is still required
+* Separate frontend form errors from API/server errors
+
+---
+
+# 🧠 Day 28 Mental Model
+
+The most important idea from this day:
+
+> **React state controls the form, validation protects the user experience, and the backend remains the final authority.**
+
+The overall flow is:
+
+Input
+  ↓
+React State
+  ↓
+Validation
+  ↓
+Data Conversion
+  ↓
+onAnalyze()
+  ↓
+usePlayers
+  ↓
+API Layer
+  ↓
+Backend
+  ↓
+MongoDB
+
+This gives the AI Basketball Analyzer a much more professional form architecture and prepares the project for more advanced frontend behavior.
+
+---------------------------------------------------------------------------------------
