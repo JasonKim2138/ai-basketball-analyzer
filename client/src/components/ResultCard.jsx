@@ -155,6 +155,42 @@ function ResultCard({ result, onDelete, onUpdate }) {
 
                     </div>
 
+                    <div className="ai-analysis">
+
+                        <h4>AI Analysis</h4>
+
+                        <p>
+                            <strong>Scoring:</strong>{" "}
+                            {result?.aiAnalysis?.scoringAnalysis}
+                        </p>
+
+                        <p>
+                            <strong>Playmaking:</strong>{" "}
+                            {result?.aiAnalysis?.playmakingAnalysis}
+                        </p>
+
+                        <p>
+                            <strong>Rebounding:</strong>{" "}
+                            {result?.aiAnalysis?.reboundingAnalysis}
+                        </p>
+
+                        <p>
+                            <strong>Main Strength:</strong>{" "}
+                            {result?.aiAnalysis?.strength}
+                        </p>
+
+                        <p>
+                            <strong>Biggest Weakness:</strong>{" "}
+                            {result?.aiAnalysis?.weakness}
+                        </p>
+
+                        <p>
+                            <strong>Overall:</strong>{" "}
+                            {result?.aiAnalysis?.overall}
+                        </p>
+
+                    </div>
+                    
                     <div className="result-actions">
 
                         <button

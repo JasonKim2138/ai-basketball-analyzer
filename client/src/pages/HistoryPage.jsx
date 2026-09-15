@@ -9,6 +9,7 @@ function HistoryPage({
     onUpdate,
     loading,
     error,
+    errorDetails,
     success
 }) {
     return (
@@ -28,6 +29,16 @@ function HistoryPage({
                 <p className="error-message">
                     {error}
                 </p>
+            )}
+
+            {errorDetails && (
+                <div>
+                    {Object.entries(errorDetails).map(([field, message]) => (
+                        <p key={field}>
+                            {field}: {message}
+                        </p>
+                    ))}
+                </div>
             )}
 
             {success && (

@@ -8,6 +8,15 @@ const {
   analyzePlayer
 } = require("../services/playerAnalysisService");
 
+const {
+  analyzeWithAI
+} = require("../services/aiService");
+
+const {
+  successResponse,
+  errorResponse
+} = require("../utils/response");
+
 async function getPlayers(req, res, next) {
 
   try {
@@ -29,7 +38,7 @@ async function getPlayers(req, res, next) {
 
     const players = await Player.find(query);
 
-    res.json(players);
+    successResponse(res, players);
 
   } catch (error) {
 
@@ -47,21 +56,43 @@ async function createAnalysis(req, res, next) {
     const errors = validatePlayer(player);
 
     if (Object.keys(errors).length > 0) {
-      return res.status(400).json({
-        message: "Invalid player data",
-        errors
-      });
+      return errorResponse(res, "Invalid player data", 400, errors);
     }
-    const analysis = analyzePlayer(player);
+
+  const analysis = analyzePlayer(player);
+
+  let aiAnalysis;
+
+  let aiAvailable = true;
+
+  try {
+      aiAnalysis = await analyzeWithAI(player);
+  } catch (error) {
+      console.error("OpenAI analysis failed:", error.message);
+
+      aiAvailable = false;
+
+      aiAnalysis = {
+          overall: "AI analysis is currently unavailable.",
+          strength: "Unable to generate AI analysis.",
+          weakness: "Unable to generate AI analysis.",
+          scoringAnalysis: "AI analysis unavailable.",
+          playmakingAnalysis: "AI analysis unavailable.",
+          reboundingAnalysis: "AI analysis unavailable."
+      };
+  }
 
     const newPlayer = new Player({
       ...analysis,
+      player,
+      aiAnalysis,
+      aiAvailable,
       userId: req.user.userId
     });
 
     await newPlayer.save();
 
-    res.status(201).json(newPlayer);
+    successResponse(res, newPlayer, 201);
 
   } catch (error) {
 
@@ -85,8 +116,8 @@ async function deleteAnalysis(req, res) {
     });
   }
 
-  res.json({
-    message: "Deleted successfully"
+  successResponse(res, {
+      message: "Deleted successfully"
   });
 }
 
@@ -135,10 +166,32 @@ async function updatePlayer(req, res) {
 
   const analysis = analyzePlayer(updatedPlayerData);
 
+  let aiAnalysis;
+  let aiAvailable = true;
+  
+  try {
+    aiAnalysis = await analyzeWithAI(updatedPlayerData);
+  } catch (error) {
+    console.error("OpenAI analysis failed during update:", error.message);
+
+    aiAvailable = false;
+
+    aiAnalysis = {
+      overall: "AI analysis is currently unavailable.",
+      strength: "Unable to generate AI analysis.",
+      weakness: "Unable to generate AI analysis.",
+      scoringAnalysis: "AI analysis unavailable.",
+      playmakingAnalysis: "AI analysis unavailable.",
+      reboundingAnalysis: "AI analysis unavailable."
+    };
+  }
+
   player.player = updatedPlayerData;
   player.starter = analysis.starter;
   player.grade = analysis.grade;
   player.message = analysis.message;
+  player.aiAnalysis = aiAnalysis;
+  player.aiAvailable = aiAvailable;
 
   await player.save();
 

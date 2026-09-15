@@ -2,7 +2,7 @@ import { apiRequest } from "./apiClient";
 
 export async function analyzePlayer(player) {
 
-    return await apiRequest("/player", {
+    const data = await apiRequest("/player", {
         method: "POST",
 
         headers: {
@@ -16,22 +16,28 @@ export async function analyzePlayer(player) {
             rebounds: Number(player.rebounds)
         })
     });
+
+    return data.data;
 }
 
 export async function loadPlayers() {
-    return await apiRequest("/player");
+    const data = await apiRequest("/player");
+
+    return data.data;
 }
 
 export async function deleteAnalysis(id) {
 
-    return await apiRequest(`/player/${id}`, {
+    const data = await apiRequest(`/player/${id}`, {
         method: "DELETE"
     });
+
+    return data.data;
 }
 
 export async function updatePlayer(id, updatedData) {
 
-    return await apiRequest(`/player/${id}`, {
+    const data = await apiRequest(`/player/${id}`, {
         method: "PUT",
 
         headers: {
@@ -40,6 +46,8 @@ export async function updatePlayer(id, updatedData) {
 
         body: JSON.stringify(updatedData)
     });
+
+    return data.data;
 }
 
 export async function searchPlayers(name, grade) {
@@ -54,5 +62,7 @@ export async function searchPlayers(name, grade) {
         params.append("grade", grade);
     }
 
-    return await apiRequest(`/player?${params.toString()}`);
+    const data = await apiRequest(`/player?${params.toString()}`);
+
+    return data.data;
 }

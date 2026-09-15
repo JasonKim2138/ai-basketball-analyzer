@@ -25,6 +25,7 @@ function App() {
     results,
     loading: playerLoading,
     error: playerError,
+    errorDetails,
     analyze,
     loadHistory,
     deletePlayer,

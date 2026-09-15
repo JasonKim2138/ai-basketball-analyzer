@@ -10,6 +10,10 @@ const playerSchema = new mongoose.Schema(
 
   message: String,
   
+  aiAnalysis: Object,
+
+  aiAvailable: Boolean,
+  
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

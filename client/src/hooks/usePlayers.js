@@ -10,10 +10,12 @@ function usePlayers() {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [errorDetails, setErrorDetails] = useState(null);
 
     async function analyze(player) {
         setLoading(true);
         setError("");
+        setErrorDetails(null);
 
         try {
             const data = await analyzePlayer(player);
@@ -23,10 +25,12 @@ function usePlayers() {
             return data;
 
         } catch (error) {
+
             setError(error.message);
+            setErrorDetails(error.errors);
             throw error;
 
-        } finally {
+        }finally {
             setLoading(false);
         }
     }
@@ -93,6 +97,7 @@ function usePlayers() {
         results,
         loading,
         error,
+        errorDetails,
         analyze,
         loadHistory,
         deletePlayer,
