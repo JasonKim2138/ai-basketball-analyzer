@@ -1,3 +1,5 @@
+const { analyzeWithAI } = require("./aiService");
+
 function analyzePlayer(player) {
   const starter = getStarterStatus(player);
 
@@ -6,7 +8,6 @@ function analyzePlayer(player) {
   const message = getMessage(player);
 
   return ({
-    player: player,
     starter,
     grade,
     message,
@@ -76,6 +77,23 @@ function getMessage(player){
   return (message);
 }
 
+async function analyzePlayerWithAI(player) {
+
+  const analysis = analyzePlayer(player);
+
+  const {
+    aiAnalysis,
+    aiAvailable
+  } = await analyzeWithAI(player);
+
+  return {
+    ...analysis,
+    aiAnalysis,
+    aiAvailable
+  };
+}
+
 module.exports = {
-  analyzePlayer
+  analyzePlayer,
+  analyzePlayerWithAI
 };
