@@ -95,11 +95,17 @@ async function updatePlayer(id, userId, updatedData) {
   );
 
   player.player = updatedPlayerData;
+  player.performance = analysis.performance;
+  player.overallScore = analysis.overallScore;
   player.starter = analysis.starter;
   player.grade = analysis.grade;
   player.message = analysis.message;
+  player.strength = analysis.strength;
+  player.weakness = analysis.weakness;
+  player.role = analysis.role;
   player.aiAnalysis = analysis.aiAnalysis;
   player.aiAvailable = analysis.aiAvailable;
+  player.milestone = analysis.milestone;
 
   await player.save();
 

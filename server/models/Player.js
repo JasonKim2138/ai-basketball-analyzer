@@ -4,14 +4,20 @@ const playerSchema = new mongoose.Schema(
   {
   player: Object,
 
+  performance: Object,
+
+  overallScore: Number,
+
   starter: String,
-
   grade: String,
-
   message: String,
-  
-  aiAnalysis: Object,
 
+  strength: String,
+  weakness: String,
+  role: String,
+  milestone: Object,
+
+  aiAnalysis: Object,
   aiAvailable: Boolean,
   
   userId: {
