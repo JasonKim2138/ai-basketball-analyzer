@@ -3325,3 +3325,695 @@ Scouting-style analysis
 This creates a stronger foundation for future AI features and makes the project demonstrate both **software engineering and AI engineering**.
 
 ---------------------------------------------------------------------------------------
+
+# Day 32 — Testing + Reliability
+
+## 🎯 Goal
+
+Learn how to automatically verify that the Basketball Analyzer continues working correctly as the codebase grows.
+
+The main focus was:
+
+Unit Tests
++
+Mocking
++
+Boundary Testing
++
+Service Tests
++
+Controller Tests
++
+Error Testing
+
+---
+
+# 1. Installing Jest
+
+The backend did not originally have a testing framework.
+
+We installed Jest with:
+
+npm install --save-dev jest
+
+The `--save-dev` flag puts Jest in:
+
+"devDependencies": {
+  "jest": "..."
+}
+
+### Dependencies vs devDependencies
+
+Regular dependencies are needed by the application:
+
+express
+mongoose
+openai
+bcrypt
+jsonwebtoken
+cors
+dotenv
+
+Development dependencies are tools used while building/testing:
+
+jest
+
+The application does not need Jest to serve users.
+
+---
+
+# 2. Running the Application vs Running Tests
+
+These are two different commands.
+
+### Start the backend
+
+node server.js
+
+This starts:
+
+Express
+   ↓
+HTTP server
+   ↓
+localhost:3000
+
+### Run tests
+
+npm test
+
+Our `package.json` contains:
+
+"scripts": {
+  "test": "jest"
+}
+
+So:
+
+npm test
+
+is essentially a shortcut for:
+
+jest
+
+### Mental model
+
+node server.js
+→ Run the application
+
+npm test
+→ Run the automated tests
+
+---
+
+# 3. Jest Test File Discovery
+
+Jest automatically finds common test filenames such as:
+
+*.test.js
+*.spec.js
+
+and files inside test directories.
+
+Our project currently has:
+
+server/
+└── __test__/
+    ├── playerAnalysisService.test.js
+    ├── playerService.test.js
+    └── playerController.test.js
+
+We do not manually register each test file.
+
+When we run:
+
+npm test
+
+Jest searches the project and runs the matching test files.
+
+---
+
+# 4. `describe()`
+
+Syntax:
+
+describe("getScoringLevel", () => {
+  // tests
+});
+
+`describe()` creates a **group of related tests**.
+
+The string:
+
+"getScoringLevel"
+
+is the group's name.
+
+The arrow function:
+
+() => {
+  // tests
+}
+
+contains the tests belonging to that group.
+
+Example:
+
+describe("getGrade", () => {
+
+  // grade tests
+
+});
+
+---
+
+# 5. `test()`
+
+Syntax:
+
+test("30 points should be Elite", () => {
+  // test code
+});
+
+`test()` defines **one specific test case**.
+
+The first argument:
+
+"30 points should be Elite"
+
+is the human-readable test description.
+
+The second argument contains the code Jest executes.
+
+---
+
+# 6. `expect()`
+
+Syntax:
+
+expect(actualValue)
+
+`expect()` tells Jest:
+
+> "This is the value I want to verify."
+
+Example:
+
+expect(getScoringLevel(30))
+
+If:
+
+getScoringLevel(30)
+
+returns:
+
+"Elite"
+
+then Jest is effectively checking:
+
+expect("Elite")
+
+---
+
+# 7. `.toBe()`
+
+Used for simple exact values:
+
+expect(getScoringLevel(30)).toBe("Elite");
+
+Meaning:
+
+Actual value
+     ↓
+"Elite"
+     ↓
+Exactly equal to
+     ↓
+"Elite"
+
+Example:
+
+expect(getGrade(3.5)).toBe("S");
+
+---
+
+# 8. `.toEqual()`
+
+Use `toEqual()` when comparing objects or arrays by their contents.
+
+Example:
+
+expect(getMilestone({
+  points: 10,
+  assists: 10,
+  rebounds: 10
+})).toEqual({
+  type: "Triple-Double",
+  categories: [
+    "Points",
+    "Assists",
+    "Rebounds"
+  ]
+});
+
+### Simple rule
+
+toBe()
+→ simple exact values
+
+toEqual()
+→ objects / arrays / structured data
+
+---
+
+# 9. Boundary Testing
+
+Instead of testing random values, we tested values where the behavior changes.
+
+For scoring:
+
+30 → Elite
+29 → Strong
+
+25 → Strong
+24 → Moderate
+
+15 → Moderate
+14 → Low
+
+For playmaking:
+
+7 → Elite
+6 → Strong
+
+4 → Strong
+3 → Moderate
+
+2 → Moderate
+1 → Low
+
+For rebounding:
+
+10 → Elite
+9 → Strong
+
+7 → Strong
+6 → Moderate
+
+4 → Moderate
+3 → Low
+
+### Why?
+
+Most bugs happen around boundaries.
+
+For example:
+
+points >= 30
+
+versus:
+
+points > 30
+
+A test for exactly `30` catches that mistake.
+
+---
+
+# 10. `jest.fn()`
+
+Syntax:
+
+const fakeFunction = jest.fn();
+
+`jest.fn()` creates a **mock function**.
+
+It allows us to create fake dependencies for tests.
+
+Example:
+
+analyzeWithAI: jest.fn()
+
+means:
+
+> "Pretend there is an `analyzeWithAI` function, but don't run the real one."
+
+---
+
+# 11. `jest.mock()`
+
+Syntax:
+
+jest.mock("../services/aiService", () => ({
+  analyzeWithAI: jest.fn()
+}));
+
+This tells Jest:
+
+> "When this test imports `aiService`, replace it with this fake version."
+
+This prevented our unit tests from loading the real OpenAI client.
+
+Without the mock:
+
+test
+ ↓
+playerAnalysisService
+ ↓
+aiService
+ ↓
+OpenAI
+ ↓
+API key required
+
+With the mock:
+
+test
+ ↓
+playerAnalysisService
+ ↓
+fake aiService
+
+---
+
+# 12. Mocking External Dependencies
+
+We used different mocks for different layers.
+
+### AI test
+
+jest.mock("../services/aiService", () => ({
+  analyzeWithAI: jest.fn()
+}));
+
+### Player service test
+
+We mocked the database model:
+
+jest.mock("../models/Player", () => {
+  return jest.fn().mockImplementation(function (data) {
+    this.data = data;
+
+    this.save = jest.fn().mockResolvedValue({
+      _id: "player123",
+      ...data
+    });
+  });
+});
+
+### Controller test
+
+We mocked the service, validator, and response utilities:
+
+jest.mock("../services/playerService", () => ({
+  createPlayer: jest.fn(),
+  getPlayers: jest.fn(),
+  deletePlayer: jest.fn(),
+  updatePlayer: jest.fn()
+}));
+
+The goal is always:
+
+Test the current layer
+        ↓
+Replace unrelated layers with mocks
+
+---
+
+# 13. `mockResolvedValue()`
+
+Used for mocked async functions that should succeed.
+
+analyzeWithAI.mockResolvedValue({
+  aiAnalysis: {
+    overall: "Excellent performance"
+  },
+  aiAvailable: true
+});
+
+This means:
+
+> Pretend the asynchronous function successfully resolves with this value.
+
+Another example:
+
+Player.find.mockResolvedValue(fakePlayers);
+
+---
+
+# 14. `mockRejectedValue()`
+
+Used for mocked async functions that should fail.
+
+createPlayer.mockRejectedValue(
+  new Error("Database connection failed")
+);
+
+This simulates:
+
+Async operation
+      ↓
+Failure
+      ↓
+catch(error)
+
+We used this to test:
+
+next(error)
+
+in the controller.
+
+---
+
+# 15. `toHaveBeenCalledWith()`
+
+Used to verify that a mock function received specific arguments.
+
+Example:
+
+expect(createPlayer).toHaveBeenCalledWith(
+  playerData,
+  "user123"
+);
+
+This means:
+
+> "Did `createPlayer()` get called with exactly these arguments?"
+
+This is extremely useful for testing communication between layers.
+
+---
+
+# 16. `.toHaveBeenCalled()`
+
+Checks whether a mock was called at all.
+
+expect(Player.find).toHaveBeenCalled();
+
+---
+
+# 17. `.not.toHaveBeenCalled()`
+
+Checks that something **didn't** happen.
+
+Example:
+
+expect(createPlayer).not.toHaveBeenCalled();
+
+We used this for validation:
+
+Invalid input
+   ↓
+Validation fails
+   ↓
+createPlayer() should NOT run
+
+This is important because tests can verify not only what the application does, but also what it **must not do**.
+
+---
+
+# 18. `beforeEach()`
+
+Syntax:
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+This runs before every test in the test file/group.
+
+We needed it because mock functions remember their previous calls.
+
+Without clearing:
+
+Test 1
+mock called once
+
+Test 2
+mock still remembers Test 1
+
+With:
+
+jest.clearAllMocks();
+
+we get:
+
+Test 1
+mock called once
+
+beforeEach()
+↓
+history cleared
+
+Test 2
+mock starts with zero calls
+
+### Important
+
+`clearAllMocks()` clears **mock call history**. It doesn't remove the mock itself.
+
+---
+
+# 19. Testing Objects and Arrays
+
+When a function returns structured data:
+
+{
+  type: "Double-Double",
+  categories: [
+    "Points",
+    "Rebounds"
+  ]
+}
+
+use:
+
+toEqual()
+
+rather than `toBe()`.
+
+---
+
+# 20. Testing Error Handling
+
+We tested three major types of failure.
+
+### Validation error
+
+Invalid input
+→ 400
+
+### Not found
+
+Player doesn't exist
+→ 404
+
+### Unexpected server error
+
+Service throws
+→ catch(error)
+→ next(error)
+
+Example:
+
+expect(next).toHaveBeenCalledWith(error);
+
+This verifies that the controller properly passes the unexpected error to Express's error middleware.
+
+---
+
+# 21. Testing Different Layers
+
+We now have three Jest test suites:
+
+__test__/
+│
+├── playerAnalysisService.test.js
+│   ↓
+│   Basketball logic
+│   Validators
+│   AI boundary
+│
+├── playerService.test.js
+│   ↓
+│   Player workflows
+│   Database interactions
+│
+└── playerController.test.js
+    ↓
+    HTTP/controller behavior
+
+### The separation is important
+
+Analysis test
+→ Is the basketball logic correct?
+
+Service test
+→ Does the workflow use the database correctly?
+
+Controller test
+→ Does the HTTP layer communicate correctly with the service?
+
+---
+
+# 22. Important Testing Principle
+
+> **Test each layer independently.**
+
+For example:
+
+Controller
+   ↓
+Mock Service
+
+instead of:
+
+Controller
+   ↓
+Real Service
+   ↓
+MongoDB
+
+That's what keeps unit tests:
+
+* fast
+* predictable
+* isolated
+* easy to debug
+
+---
+
+# 23. Current Test Status
+
+At the end of Day 32:
+
+Test Suites: 3 passed
+Tests:       76 passed
+
+The application now has automated coverage across:
+
+Basketball analysis
+Validation
+AI integration
+AI fallback
+Player service
+Database interaction
+Controller behavior
+Error handling
+
+---
+
+# 🎯 Day 32 Result
+
+Before Day 32:
+
+"My application works."
+
+After Day 32:
+
+"My application works,
+and I have automated tests protecting
+the important behavior."
+
+That's a major step toward professional SWE development.
+
+---------------------------------------------------------------------------------------

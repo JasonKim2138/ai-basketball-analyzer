@@ -384,5 +384,14 @@ async function analyzePlayerWithAI(player) {
 
 module.exports = {
   analyzePlayer,
-  analyzePlayerWithAI
+  analyzePlayerWithAI,
+  getScoringLevel,
+  getPlaymakingLevel,
+  getReboundingLevel,
+  getOverallScore,
+  getGrade,
+  getPlayerRole,
+  getMilestone,
+  getStrength,
+  getWeakness
 };
