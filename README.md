@@ -4017,3 +4017,767 @@ the important behavior."
 That's a major step toward professional SWE development.
 
 ---------------------------------------------------------------------------------------
+
+# Day 33 — Integration/API Testing
+
+## 🎯 Goal
+
+Move from testing individual functions and layers in isolation to testing the **actual HTTP/API flow** of the Basketball Analyzer.
+
+The main tools/concepts were:
+
+Supertest
+Express app separation
+HTTP integration tests
+Authentication testing
+JWT testing
+Query parameters
+Route parameters
+Error middleware testing
+
+---
+
+# 1. Unit Testing vs Integration Testing
+
+### Day 32 — Unit Testing
+
+We tested individual pieces independently:
+
+Function
+   ↓
+Test
+
+Controller
+   ↓
+Mocked Service
+
+Service
+   ↓
+Mocked Database
+
+### Day 33 — Integration Testing
+
+We started testing multiple real layers together:
+
+HTTP Request
+   ↓
+Express Route
+   ↓
+Middleware
+   ↓
+Controller
+   ↓
+Mocked Service
+   ↓
+HTTP Response
+
+The goal is to verify that the pieces communicate correctly.
+
+---
+
+# 2. Installed Supertest
+
+Installed with:
+
+npm install --save-dev supertest
+
+Supertest is a development/testing dependency used to send HTTP requests to your Express application.
+
+Your `package.json` now conceptually has:
+
+{
+  "dependencies": {
+    "express": "...",
+    "mongoose": "...",
+    "openai": "..."
+  },
+  "devDependencies": {
+    "jest": "...",
+    "supertest": "..."
+  }
+}
+
+---
+
+# 3. Separated `app.js` and `server.js`
+
+Originally, `server.js` did everything:
+
+Create Express app
+Configure middleware
+Register routes
+Connect MongoDB
+Start server
+
+We separated those responsibilities.
+
+### `app.js`
+
+Create Express app
+Configure middleware
+Register routes
+Register error handler
+Export app
+
+### `server.js`
+
+Import app
+Connect MongoDB
+Start server with app.listen()
+
+---
+
+# 4. Why `app.js` Matters for Testing
+
+`server.js` contains:
+
+app.listen(3000);
+
+and:
+
+connectDB();
+
+We don't want our API tests to automatically:
+
+* start a server on port 3000
+* connect to the real MongoDB
+
+Instead:
+
+const app = require("../app");
+
+gives Supertest the Express application directly.
+
+So:
+
+Development
+→ node server.js
+→ real server
+
+Testing
+→ app.js
+→ Supertest
+
+---
+
+# 5. Supertest
+
+Installed with:
+
+npm install --save-dev supertest
+
+Imported with:
+
+const request = require("supertest");
+
+A request looks like:
+
+const response = await request(app)
+  .get("/");
+
+This sends:
+
+GET /
+
+to the Express application.
+
+---
+
+# 6. `.get()`, `.post()`, `.put()`, `.delete()`
+
+Supertest mirrors HTTP methods.
+
+request(app).get("/player");
+
+→ `GET /player`
+
+request(app).post("/player");
+
+→ `POST /player`
+
+request(app).put("/player/player123");
+
+→ `PUT /player/player123`
+
+request(app).delete("/player/player123");
+
+→ `DELETE /player/player123`
+
+---
+
+# 7. `.send()`
+
+Used to send an HTTP request body.
+
+await request(app)
+  .post("/player")
+  .send({
+    name: "Jason",
+    points: 30,
+    assists: 8,
+    rebounds: 10
+  });
+
+This becomes:
+
+req.body
+
+inside Express:
+
+{
+  name: "Jason",
+  points: 30,
+  assists: 8,
+  rebounds: 10
+}
+
+---
+
+# 8. `.set()`
+
+Used to add HTTP headers.
+
+For authentication:
+
+.set("Authorization", `Bearer ${token}`)
+
+This creates:
+
+Authorization: Bearer <token>
+
+Your `auth` middleware reads:
+
+req.headers.authorization
+
+and verifies the JWT.
+
+---
+
+# 9. `.query()`
+
+Used for URL query parameters.
+
+Example:
+
+await request(app)
+  .get("/player")
+  .query({
+    name: "Jason",
+    grade: "A"
+  });
+
+This represents:
+
+GET /player?name=Jason&grade=A
+
+Express receives:
+
+req.query
+
+as:
+
+{
+  name: "Jason",
+  grade: "A"
+}
+
+---
+
+# 10. Route Parameters
+
+For:
+
+DELETE /player/player123
+
+your route is:
+
+router.delete("/:id", auth, deleteAnalysis);
+
+Express gives the controller:
+
+req.params.id
+
+which equals:
+
+"player123"
+
+Same idea for:
+
+PUT /player/player123
+
+---
+
+# 11. `response.statusCode`
+
+Supertest gives access to the HTTP status:
+
+expect(response.statusCode).toBe(200);
+
+Examples:
+
+200 → successful request
+201 → resource created
+400 → bad request
+401 → unauthenticated/invalid authentication
+404 → resource not found
+500 → server error
+
+---
+
+# 12. `response.body`
+
+When the API returns JSON:
+
+res.json({
+  message: "AI Basketball Backend Running 🏀"
+});
+
+Supertest exposes it as:
+
+response.body
+
+So we can test:
+
+expect(response.body).toEqual({
+  message: "AI Basketball Backend Running 🏀"
+});
+
+---
+
+# 13. JWT Integration Testing
+
+Instead of manually inventing a token, we created one using:
+
+const jwt = require("jsonwebtoken");
+
+const token = jwt.sign(
+  {
+    userId: "user123"
+  },
+  process.env.JWT_SECRET
+);
+
+This uses the same JWT secret as your application.
+
+Your real middleware then performs:
+
+jwt.verify(token, JWT_SECRET);
+
+So the test exercises the real authentication logic.
+
+---
+
+# 14. Authentication Test Cases
+
+We tested:
+
+### No token
+
+POST /player
+   ↓
+No Authorization header
+   ↓
+401
+
+### Invalid token
+
+POST /player
+   ↓
+Invalid JWT
+   ↓
+401
+
+### Valid token
+
+POST /player
+   ↓
+JWT verified
+   ↓
+req.user.userId
+   ↓
+Controller
+
+This is much closer to how the real application behaves.
+
+---
+
+# 15. Integration Testing with Mocks
+
+We did not remove all mocks.
+
+For example:
+
+jest.mock("../services/playerService", () => ({
+  createPlayer: jest.fn(),
+  getPlayers: jest.fn(),
+  deletePlayer: jest.fn(),
+  updatePlayer: jest.fn()
+}));
+
+The purpose is:
+
+Real:
+Supertest
+ ↓
+Express
+ ↓
+Route
+ ↓
+Auth middleware
+ ↓
+Controller
+
+Mock:
+Player Service
+
+So the integration test focuses on the API/HTTP portion without touching the real database.
+
+---
+
+# 16. `mockResolvedValue()`
+
+Used to simulate a successful async dependency.
+
+createPlayer.mockResolvedValue(savedPlayer);
+
+Meaning:
+
+> Pretend `createPlayer()` successfully returned `savedPlayer`.
+
+---
+
+# 17. `mockRejectedValue()`
+
+Used to simulate an async failure.
+
+updatePlayer.mockRejectedValue(error);
+
+Meaning:
+
+> Pretend `updatePlayer()` failed.
+
+This allowed us to test:
+
+Service error
+   ↓
+Controller catch
+   ↓
+next(error)
+   ↓
+errorHandler
+   ↓
+500 response
+
+---
+
+# 18. Testing the Error Handler
+
+Your error middleware is:
+
+function errorHandler(err, req, res, next) {
+
+  console.error("🔥 ERROR:", err);
+
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      message: "Invalid player ID"
+    });
+  }
+
+  res.status(500).json({
+    message: "Internal server error"
+  });
+}
+
+We tested both branches.
+
+### Normal error
+
+Error
+→ 500
+→ "Internal server error"
+
+### CastError
+
+CastError
+→ 400
+→ "Invalid player ID"
+
+---
+
+# 19. Test Isolation
+
+We learned that Jest mocks remember previous calls.
+
+So we use:
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+This clears mock call history before every test.
+
+Without it:
+
+Test 1
+mock called
+
+Test 2
+mock still remembers Test 1
+
+With it:
+
+Test 1
+mock called
+
+beforeEach()
+↓
+history cleared
+
+Test 2
+mock starts fresh
+
+---
+
+# 20. Layer-Specific Testing
+
+Your test structure is now:
+
+server/
+└── __test__/
+    ├── playerAnalysisService.test.js
+    ├── playerService.test.js
+    ├── playerController.test.js
+    └── app.test.js
+
+### `playerAnalysisService.test.js`
+
+Tests:
+
+Basketball business logic
+Performance categories
+Grades
+Roles
+Milestones
+Strength/weakness
+AI boundary
+
+### `playerService.test.js`
+
+Tests:
+
+Player workflows
+Database interactions
+Create
+Get
+Update
+Delete
+
+### `playerController.test.js`
+
+Tests:
+
+Controller behavior
+Validation responses
+404 responses
+Service interaction
+next(error)
+
+### `app.test.js`
+
+Tests:
+
+Real HTTP requests
+Routes
+Authentication middleware
+Query parameters
+Route parameters
+HTTP status codes
+API responses
+Error middleware
+
+---
+
+# 21. Important Testing Syntax
+
+### Describe a group
+
+describe("GET /player", () => {
+  // tests
+});
+
+### Create a test
+
+test("should return players", async () => {
+  // test
+});
+
+### Check a value
+
+expect(value).toBe(expected);
+
+### Compare objects
+
+expect(value).toEqual(expected);
+
+### Check mock arguments
+
+expect(mockFunction).toHaveBeenCalledWith(
+  expectedArgument
+);
+
+### Check that something didn't happen
+
+expect(mockFunction).not.toHaveBeenCalled();
+
+### Fake a successful async result
+
+mockFunction.mockResolvedValue(value);
+
+### Fake an async failure
+
+mockFunction.mockRejectedValue(error);
+
+### Clear mock history
+
+jest.clearAllMocks();
+
+---
+
+# 22. Current API Flow
+
+Your real player creation flow is now:
+
+User
+ ↓
+React
+ ↓
+playerApi
+ ↓
+apiClient
+ ↓
+POST /player
+ ↓
+Express
+ ↓
+auth middleware
+ ↓
+playerController
+ ↓
+playerService
+ ↓
+playerAnalysisService
+ ↓
+aiService
+ ↓
+OpenAI
+ ↓
+MongoDB
+ ↓
+HTTP response
+ ↓
+React
+ ↓
+User
+
+Your integration tests now verify important sections of this pipeline without needing to use the real database or OpenAI every time.
+
+---
+
+# 🧪 Day 33 Test Result
+
+At the end of Day 33:
+
+Test Suites: 4 passed
+Tests:       90 passed
+
+The four suites cover:
+
+Business logic ✅
+Services ✅
+Controllers ✅
+HTTP/API flow ✅
+
+---
+
+# 🧠 Main Concepts Learned
+
+* Difference between unit and integration tests
+* Supertest
+* Testing Express applications without `app.listen()`
+* Separating `app.js` from `server.js`
+* HTTP methods in Supertest
+* `.send()`
+* `.set()`
+* `.query()`
+* Route parameters
+* HTTP status codes
+* HTTP response bodies
+* JWT integration testing
+* Authentication testing
+* Mocking service dependencies
+* Testing Express error middleware
+* Test isolation
+
+---
+
+# 🎯 Day 33 Result
+
+Before Day 33:
+
+We tested individual pieces.
+
+After Day 33:
+
+We can test how multiple backend pieces
+communicate through the actual HTTP API.
+
+The project now has both:
+
+Unit Testing
++
+Integration/API Testing
+
+which provides a much stronger foundation for future refactoring and features.
+
+---
+
+# 🚀 Day 34 Preview
+
+## API Design + Consistent Responses
+
+We've now seen that some successful responses look like:
+
+{
+  success: true,
+  data: ...
+}
+
+while some errors look like:
+
+{
+  success: false,
+  message: "...",
+  errors: null
+}
+
+and the global error handler currently returns:
+
+{
+  message: "Internal server error"
+}
+
+Day 34 will examine this API contract and make the response behavior more consistent.
+
+We'll learn:
+
+HTTP response design
+API contracts
+Consistent error responses
+Centralized error handling
+Middleware responsibilities
+
+The goal is to make your API easier for your React frontend—and future developers—to work with.
+
+---------------------------------------------------------------------------------------
+
