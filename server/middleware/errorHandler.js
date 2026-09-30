@@ -1,17 +1,29 @@
+const {
+  errorResponse
+} = require("../utils/response");
+
+
 function errorHandler(err, req, res, next) {
 
   console.error("🔥 ERROR:", err);
 
   if (err.name === "CastError") {
-    return res.status(400).json({
-      message: "Invalid player ID"
-    });
+
+    return errorResponse(
+      res,
+      "Invalid player ID",
+      400
+    );
+
   }
 
-  res.status(500).json({
-    message: "Internal server error"
-  });
+  return errorResponse(
+    res,
+    "Internal server error",
+    500
+  );
 
 }
+
 
 module.exports = errorHandler;

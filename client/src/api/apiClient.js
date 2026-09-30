@@ -30,5 +30,9 @@ export async function apiRequest(endpoint, options = {}) {
         throw error;
     }
 
+    if (data.success !== true) {
+        throw new Error("Invalid API response");
+    }
+
     return data;
 }

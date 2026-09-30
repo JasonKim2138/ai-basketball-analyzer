@@ -31,7 +31,10 @@ describe("GET /", () => {
     expect(response.statusCode).toBe(200);
 
     expect(response.body).toEqual({
-      message: "AI Basketball Backend Running 🏀"
+        success: true,
+        data: {
+            message: "AI Basketball Backend Running 🏀"
+        }
     });
 
   });
@@ -54,7 +57,9 @@ describe("POST /player", () => {
         expect(response.statusCode).toBe(401);
 
         expect(response.body).toEqual({
-            message: "No token provided"
+            success: false,
+            message: "No token provided",
+            errors: null
         });
 
     });
@@ -117,7 +122,9 @@ describe("POST /player", () => {
         expect(response.statusCode).toBe(401);
 
         expect(response.body).toEqual({
-            message: "Invalid token"
+            success: false,
+            message: "Invalid token",
+            errors: null
         });
 
         expect(createPlayer).not.toHaveBeenCalled();
@@ -472,7 +479,9 @@ describe("PUT /player/:id", () => {
         expect(response.statusCode).toBe(500);
 
         expect(response.body).toEqual({
-            message: "Internal server error"
+            success: false,
+            message: "Internal server error",
+            errors: null
         });
 
     });
@@ -501,7 +510,9 @@ describe("PUT /player/:id", () => {
         expect(response.statusCode).toBe(400);
 
         expect(response.body).toEqual({
-            message: "Invalid player ID"
+            success: false,
+            message: "Invalid player ID",
+            errors: null
         });
 
     });

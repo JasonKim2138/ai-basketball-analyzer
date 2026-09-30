@@ -12,8 +12,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const {
+  successResponse
+} = require("./utils/response");
+
 app.get("/", (req, res) => {
-  res.json({
+  successResponse(res, {
     message: "AI Basketball Backend Running 🏀"
   });
 });

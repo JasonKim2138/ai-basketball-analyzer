@@ -1,15 +1,21 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const {
+  errorResponse
+} = require("../utils/response");
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 function auth(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({
-      message: "No token provided"
-    });
+    return errorResponse(
+      res,
+      "No token provided",
+      401
+    );
   }
 
   const token = authHeader.split(" ")[1];
@@ -21,9 +27,11 @@ function auth(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
-      message: "Invalid token"
-    });
+    return errorResponse(
+      res,
+      "Invalid token",
+      401
+    );
   }
 }
 
