@@ -5415,3 +5415,136 @@ API response contract ✅
 * Testing API contracts
 
 --------------------------------------------------------------------------------------
+
+# Day 35 — Code Quality + Maintainability
+
+## 🎯 Goal
+
+Make the backend cleaner, easier to understand, and easier to maintain without breaking existing functionality.
+
+## 1. Cleaned Up Basketball Analysis
+
+- Centralized performance rating values in `PERFORMANCE_LEVELS`.
+- Created a reusable `getCategoryScores()` function.
+- Simplified `getStarterStatus()`.
+- Added a named constant for the milestone threshold.
+- Improved readability in `getPlayerRole()`.
+
+## 2. Improved AI Service
+
+- Changed `analyzeWithAI()` to accept an object instead of many positional arguments.
+- Extracted `buildAnalysisPrompt()`.
+- Moved the AI response schema into `AI_ANALYSIS_SCHEMA`.
+
+This makes the AI service easier to read and update.
+
+## 3. Centralized Environment Configuration
+
+Created:
+
+server/config/env.js
+
+It now manages environment variables such as:
+
+- PORT
+- MONGODB_URI
+- JWT_SECRET
+- OPENAI_API_KEY
+
+We also added `validateEnv()` to check that required variables exist before the server starts.
+
+## 4. Improved Async Error Handling
+
+Created:
+
+server/utils/asyncHandler.js
+
+This helper forwards errors from asynchronous controllers to the global error handler.
+
+We applied it to the player and authentication controllers.
+
+We also fixed the global error handler to use Express's required four-parameter signature.
+
+## 5. Improved Validation
+
+- Extracted reusable name and stat validation helpers.
+- Added a test for whitespace-only player names.
+- Kept existing validation behavior intact.
+
+## 6. Added ESLint
+
+Installed ESLint and created:
+
+server/eslint.config.js
+
+ESLint helps identify issues such as:
+
+- Unused variables
+- Undefined variables
+- Duplicate object keys
+- Unreachable code
+- Incorrect equality comparisons
+
+We fixed all reported warnings.
+
+## 7. Reviewed Dependency Security
+
+Ran:
+
+npm audit
+npm audit fix
+npm audit --omit=dev
+
+The production dependency audit reported zero vulnerabilities.
+
+Some development dependency findings remained, so we avoided forcing potentially breaking package updates.
+
+## 8. Created a Combined Check Command
+
+Updated `package.json` with:
+
+"scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "check": "npm run lint && npm test"
+}
+
+Now one command runs both code-quality checks and tests:
+
+npm run check
+
+## 🧪 Final Testing Results
+
+**ESLint:**
+- 0 warnings
+- 0 errors
+
+**Jest:**
+- 5 test suites passed
+- 95 tests passed
+
+All tests passed after fixing the Express error-handler signature.
+
+## 🧠 What I Learned
+
+- How to make code more readable and reusable.
+- Why environment configuration should be centralized.
+- How Express handles asynchronous errors.
+- Why error middleware requires four parameters.
+- How ESLint helps maintain code quality.
+- How to review dependency vulnerabilities.
+- How to combine linting and tests into one command.
+
+## 🎯 Day 35 Result
+
+The backend is now cleaner and easier to maintain.
+
+We added automated code-quality checks while keeping all 95 tests passing.
+
+**The focus was not adding new features. It was improving the quality of the code behind the features.**
+
+## 🚀 Day 36 Preview
+
+Continue improving the development workflow and prepare the project for more consistent releases.
+
+--------------------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+const asyncHandler = require("../utils/asyncHandler");
+
 const {
   createPlayer,
   getPlayers,
@@ -14,57 +16,45 @@ const {
   errorResponse
 } = require("../utils/response");
 
-async function getPlayersController(req, res, next) {
+async function getPlayersController(req, res) {
 
-  try {
-
-    const players = await getPlayers(
-      req.user.userId,
-      {
-        name: req.query.name,
-        grade: req.query.grade
-      }
-    );
-
-
-    successResponse(res, players);
-
-  } catch (error) {
-
-    next(error);
-
-  }
-
-}
-
-async function createAnalysis(req, res, next) {
-  try {
-    
-    const player = req.body;
-
-    const errors = validatePlayer(player);
-
-    if (Object.keys(errors).length > 0) {
-      return errorResponse(res, "Invalid player data", 400, errors);
+  const players = await getPlayers(
+    req.user.userId,
+    {
+      name: req.query.name,
+      grade: req.query.grade
     }
+  );
 
-    const newPlayer = await createPlayer(
-      player,
-      req.user.userId
-    );
+  return successResponse(res, players);
 
-    successResponse(res, newPlayer, 201);
-
-  } catch (error) {
-
-    next(error);
-
-  }
 }
 
-async function deleteAnalysis(req, res, next) {
+async function createAnalysis(req, res) {
 
-  try {
+  const player = req.body;
+
+  const errors = validatePlayer(player);
+
+  if (Object.keys(errors).length > 0) {
+    return errorResponse(
+      res,
+      "Invalid player data",
+      400,
+      errors
+    );
+  }
+
+  const newPlayer = await createPlayer(
+    player,
+    req.user.userId
+  );
+
+  return successResponse(res, newPlayer, 201);
+
+}
+
+async function deleteAnalysis(req, res) {
 
     const deletedPlayer = await deletePlayer(
       req.params.id,
@@ -79,18 +69,12 @@ async function deleteAnalysis(req, res, next) {
       );
     }
 
-    successResponse(res, {
+    return successResponse(res, {
       message: "Deleted successfully"
     });
-
-  } catch (error) {
-    next(error);
-  }
 }
 
-async function updatePlayer(req, res, next) {
-
-  try {
+async function updatePlayer(req, res) {
 
     const result = await updatePlayerService(
       req.params.id,
@@ -119,15 +103,11 @@ async function updatePlayer(req, res, next) {
       res,
       result.player
     );
-
-  } catch (error) {
-    next(error);
-  }
 }
 
 module.exports = {
-  getPlayers: getPlayersController,
-  createAnalysis,
-  deleteAnalysis,
-  updatePlayer
+  getPlayers: asyncHandler(getPlayersController),
+  createAnalysis: asyncHandler(createAnalysis),
+  deleteAnalysis: asyncHandler(deleteAnalysis),
+  updatePlayer: asyncHandler(updatePlayer)
 };

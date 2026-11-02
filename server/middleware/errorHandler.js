@@ -3,7 +3,7 @@ const {
 } = require("../utils/response");
 
 
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, _next) {
 
   console.error("🔥 ERROR:", err);
 

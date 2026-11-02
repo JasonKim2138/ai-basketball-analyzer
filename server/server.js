@@ -1,10 +1,34 @@
 console.log("SERVER IS STARTING...");
 
-const app = require("./app");
+const {
+  env,
+  validateEnv
+} = require("./config/env");
+
 const connectDB = require("./config/db");
 
-connectDB();
+async function startServer() {
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
+  try {
+
+    validateEnv();
+
+    const app = require("./app");
+
+    await connectDB();
+
+    app.listen(env.port, () => {
+      console.log(`Server running on port ${env.port}`);
+    });
+
+  } catch (error) {
+
+    console.error("❌ SERVER STARTUP FAILED:", error);
+
+    process.exit(1);
+
+  }
+
+}
+
+startServer();

@@ -2,7 +2,7 @@ import { apiRequest } from "./apiClient";
 
 export async function userSignup(email, password) {
 
-    return await apiRequest("/auth/signup", {
+    const data = await apiRequest("/auth/signup", {
         method: "POST",
 
         headers: {
@@ -14,11 +14,14 @@ export async function userSignup(email, password) {
             password
         })
     });
+
+    return data.data;
 }
+
 
 export async function userLogin(email, password) {
 
-    return await apiRequest("/auth/login", {
+    const data = await apiRequest("/auth/login", {
         method: "POST",
 
         headers: {
@@ -30,9 +33,14 @@ export async function userLogin(email, password) {
             password
         })
     });
+
+    return data.data;
 }
+
 
 export async function getCurrentUser() {
 
-    return await apiRequest("/auth/me");
+    const data = await apiRequest("/auth/me");
+
+    return data.data;
 }

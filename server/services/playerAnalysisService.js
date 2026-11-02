@@ -1,39 +1,12 @@
 const { analyzeWithAI } = require("./aiService");
 
-const PERFORMANCE_THRESHOLDS = {
-  scoring: {
-    elite: 30,
-    strong: 25,
-    moderate: 15
-  },
+const {
+  PERFORMANCE_THRESHOLDS,
+  ANALYSIS_RUBRIC,
+  PERFORMANCE_LEVELS,
+  MILESTONE_THRESHOLD
+} = require("../config/playerAnalysisConfig");
 
-  playmaking: {
-    elite: 7,
-    strong: 4,
-    moderate: 2
-  },
-
-  rebounding: {
-    elite: 10,
-    strong: 7,
-    moderate: 4
-  }
-};
-
-const ANALYSIS_RUBRIC = {
-  weights: {
-    scoring: 0.4,
-    playmaking: 0.3,
-    rebounding: 0.3
-  },
-
-  grades: {
-    S: 3.5,
-    A: 3.0,
-    B: 2.5,
-    C: 2.0
-  }
-};
 
 function analyzePlayer(player) {
 
@@ -72,82 +45,65 @@ function analyzePlayer(player) {
   });
 }
 
-function getScoringLevel(points) {
+function getPerformanceLevel(value, thresholds) {
 
-  if (points >= PERFORMANCE_THRESHOLDS.scoring.elite) {
+  if (value >= thresholds.elite) {
     return "Elite";
   }
 
-  if (points >= PERFORMANCE_THRESHOLDS.scoring.strong) {
+  if (value >= thresholds.strong) {
     return "Strong";
   }
 
-  if (points >= PERFORMANCE_THRESHOLDS.scoring.moderate) {
+  if (value >= thresholds.moderate) {
     return "Moderate";
   }
 
   return "Low";
+}
+
+function getScoringLevel(points) {
+
+  return getPerformanceLevel(
+    points,
+    PERFORMANCE_THRESHOLDS.scoring
+  );
+
 }
 
 
 function getPlaymakingLevel(assists) {
 
-  if (assists >= PERFORMANCE_THRESHOLDS.playmaking.elite) {
-    return "Elite";
-  }
+  return getPerformanceLevel(
+    assists,
+    PERFORMANCE_THRESHOLDS.playmaking
+  );
 
-  if (assists >= PERFORMANCE_THRESHOLDS.playmaking.strong) {
-    return "Strong";
-  }
-
-  if (assists >= PERFORMANCE_THRESHOLDS.playmaking.moderate) {
-    return "Moderate";
-  }
-
-  return "Low";
 }
 
 
 function getReboundingLevel(rebounds) {
 
-  if (rebounds >= PERFORMANCE_THRESHOLDS.rebounding.elite) {
-    return "Elite";
-  }
+  return getPerformanceLevel(
+    rebounds,
+    PERFORMANCE_THRESHOLDS.rebounding
+  );
 
-  if (rebounds >= PERFORMANCE_THRESHOLDS.rebounding.strong) {
-    return "Strong";
-  }
-
-  if (rebounds >= PERFORMANCE_THRESHOLDS.rebounding.moderate) {
-    return "Moderate";
-  }
-
-  return "Low";
 }
 
 function getStarterStatus(performance) {
 
-  const eliteCategories = [
-    performance.scoring === "Elite",
-    performance.playmaking === "Elite",
-    performance.rebounding === "Elite"
-  ].filter(Boolean).length;
+  const categoryLevels = Object.values(performance);
 
-  const strongCategories = [
-    performance.scoring === "Strong",
-    performance.playmaking === "Strong",
-    performance.rebounding === "Strong"
-  ].filter(Boolean).length;
+  const eliteCategories = categoryLevels
+    .filter(level => level === "Elite")
+    .length;
 
-  if (eliteCategories >= 2) {
-    return "Starter";
-  }
+  const strongCategories = categoryLevels
+    .filter(level => level === "Strong")
+    .length;
 
-  if (eliteCategories === 1 && strongCategories >= 1) {
-    return "Starter";
-  }
-
-  if (strongCategories >= 2) {
+  if (eliteCategories + strongCategories >= 2) {
     return "Starter";
   }
 
@@ -205,21 +161,19 @@ function getMessage(performance, grade) {
   return "Needs significant improvement.";
 }
 
+function getCategoryScores(performance) {
+
+  return {
+    Scoring: PERFORMANCE_LEVELS[performance.scoring],
+    Playmaking: PERFORMANCE_LEVELS[performance.playmaking],
+    Rebounding: PERFORMANCE_LEVELS[performance.rebounding]
+  };
+
+}
+
 function getStrength(performance) {
 
-  const levels = {
-    Elite: 4,
-    Strong: 3,
-    Solid: 2,
-    Moderate: 2,
-    Low: 1
-  };
-
-  const categories = {
-    Scoring: levels[performance.scoring],
-    Playmaking: levels[performance.playmaking],
-    Rebounding: levels[performance.rebounding]
-  };
+  const categories = getCategoryScores(performance);
 
   const maxLevel = Math.max(...Object.values(categories));
 
@@ -228,7 +182,7 @@ function getStrength(performance) {
   }
 
   const strengths = Object.entries(categories)
-    .filter(([category, level]) => level === maxLevel)
+    .filter(([_category, level]) => level === maxLevel)
     .map(([category]) => category);
 
   return strengths.join(" & ");
@@ -236,19 +190,7 @@ function getStrength(performance) {
 
 function getWeakness(performance) {
 
-  const levels = {
-    Elite: 4,
-    Strong: 3,
-    Solid: 2,
-    Moderate: 2,
-    Low: 1
-  };
-
-  const categories = {
-    Scoring: levels[performance.scoring],
-    Playmaking: levels[performance.playmaking],
-    Rebounding: levels[performance.rebounding]
-  };
+  const categories = getCategoryScores(performance);
 
   const minLevel = Math.min(...Object.values(categories));
 
@@ -257,7 +199,7 @@ function getWeakness(performance) {
   }
 
   const weaknesses = Object.entries(categories)
-    .filter(([category, level]) => level === minLevel)
+    .filter(([_category, level]) => level === minLevel)
     .map(([category]) => category);
 
   return weaknesses.join(" & ");
@@ -265,64 +207,49 @@ function getWeakness(performance) {
 
 function getOverallScore(performance) {
 
-  const levels = {
-    Elite: 4,
-    Strong: 3,
-    Moderate: 2,
-    Low: 1
-  };
-
-  const scoringScore = levels[performance.scoring];
-  const playmakingScore = levels[performance.playmaking];
-  const reboundingScore = levels[performance.rebounding];
+  const categories = getCategoryScores(performance);
 
   const weightedScore =
-    (scoringScore * ANALYSIS_RUBRIC.weights.scoring) +
-    (playmakingScore * ANALYSIS_RUBRIC.weights.playmaking) +
-    (reboundingScore * ANALYSIS_RUBRIC.weights.rebounding);
+    (categories.Scoring * ANALYSIS_RUBRIC.weights.scoring) +
+    (categories.Playmaking * ANALYSIS_RUBRIC.weights.playmaking) +
+    (categories.Rebounding * ANALYSIS_RUBRIC.weights.rebounding);
 
   return weightedScore;
 }
 
 function getPlayerRole(performance) {
 
-  if (
-    performance.scoring === "Elite" &&
-    performance.playmaking === "Elite"
-  ) {
+  const {
+    scoring,
+    playmaking,
+    rebounding
+  } = performance;
+
+  if (scoring === "Elite" && playmaking === "Elite") {
     return "All-Around Star";
   }
 
-  if (performance.scoring === "Elite") {
+  if (scoring === "Elite") {
     return "Scoring Specialist";
   }
 
-  if (performance.playmaking === "Elite") {
+  if (playmaking === "Elite") {
     return "Playmaking Specialist";
   }
 
-  if (performance.rebounding === "Elite") {
+  if (rebounding === "Elite") {
     return "Rebounding Specialist";
   }
 
-  if (
-    performance.scoring === "Strong" &&
-    performance.playmaking === "Strong"
-  ) {
+  if (scoring === "Strong" && playmaking === "Strong") {
     return "Two-Way Offensive Player";
   }
 
-  if (
-    performance.scoring === "Strong" &&
-    performance.rebounding === "Strong"
-  ) {
+  if (scoring === "Strong" && rebounding === "Strong") {
     return "Scoring & Rebounding Player";
   }
 
-  if (
-    performance.playmaking === "Strong" &&
-    performance.rebounding === "Strong"
-  ) {
+  if (playmaking === "Strong" && rebounding === "Strong") {
     return "Playmaking & Rebounding Player";
   }
 
@@ -333,15 +260,15 @@ function getMilestone(player) {
 
   const categories = [];
 
-  if (player.points >= 10) {
+  if (player.points >= MILESTONE_THRESHOLD) {
     categories.push("Points");
   }
 
-  if (player.assists >= 10) {
+  if (player.assists >= MILESTONE_THRESHOLD) {
     categories.push("Assists");
   }
 
-  if (player.rebounds >= 10) {
+  if (player.rebounds >= MILESTONE_THRESHOLD) {
     categories.push("Rebounds");
   }
 
@@ -372,8 +299,16 @@ async function analyzePlayerWithAI(player) {
   const {
     aiAnalysis,
     aiAvailable
-  } = await analyzeWithAI(player, analysis.performance, analysis.strength, analysis.weakness, analysis.overallScore,
-  analysis.grade, analysis.role, analysis.milestone);
+  } = await analyzeWithAI({
+    player,
+    performance: analysis.performance,
+    strength: analysis.strength,
+    weakness: analysis.weakness,
+    overallScore: analysis.overallScore,
+    grade: analysis.grade,
+    role: analysis.role,
+    milestone: analysis.milestone
+  });
 
   return {
     ...analysis,

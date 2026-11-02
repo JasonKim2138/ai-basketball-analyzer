@@ -523,6 +523,19 @@ test("should return fallback AI data when AI is unavailable", async () => {
 
 describe("validatePlayer", () => {
 
+  test("whitespace-only player name should return an error", () => {
+    expect(
+      validatePlayer({
+        name: "   ",
+        points: 30,
+        assists: 8,
+        rebounds: 10
+      })
+    ).toEqual({
+      name: "Player name is required"
+    });
+  });
+
   test("valid player should return no errors", () => {
     expect(
       validatePlayer({

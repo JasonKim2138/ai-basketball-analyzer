@@ -1,18 +1,29 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { env } = require("../config/env");
+const asyncHandler = require("../utils/asyncHandler");
+
+const JWT_SECRET = env.jwtSecret;
 
 const User = require("../models/User");
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const {
+  successResponse,
+  errorResponse
+} = require("../utils/response");
+
 
 async function signup(req, res) {
+
   const email = req.body.email;
   const password = req.body.password;
 
   if (!email || !password) {
-    return res.status(400).json({
-      message: "Email and password are required"
-    });
+    return errorResponse(
+      res,
+      "Email and password are required",
+      400
+    );
   }
 
   const normalizedEmail = email.toLowerCase();
@@ -22,9 +33,11 @@ async function signup(req, res) {
   });
 
   if (existingUser) {
-    return res.status(400).json({
-      message: "User already exists"
-    });
+    return errorResponse(
+      res,
+      "User already exists",
+      400
+    );
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,14 +49,24 @@ async function signup(req, res) {
 
   await user.save();
 
-  res.json({
+  return successResponse(res, {
     message: "User created"
-  });
+  }, 201);
 }
 
+
 async function login(req, res) {
+
   const email = req.body.email;
   const password = req.body.password;
+
+  if (!email || !password) {
+    return errorResponse(
+      res,
+      "Email and password are required",
+      400
+    );
+  }
 
   const normalizedEmail = email.toLowerCase();
 
@@ -52,9 +75,11 @@ async function login(req, res) {
   });
 
   if (!user) {
-    return res.status(401).json({
-      message: "Invalid email or password"
-    });
+    return errorResponse(
+      res,
+      "Invalid email or password",
+      401
+    );
   }
 
   const isValid = await bcrypt.compare(
@@ -63,9 +88,11 @@ async function login(req, res) {
   );
 
   if (!isValid) {
-    return res.status(401).json({
-      message: "Invalid email or password"
-    });
+    return errorResponse(
+      res,
+      "Invalid email or password",
+      401
+    );
   }
 
   const token = jwt.sign(
@@ -75,29 +102,34 @@ async function login(req, res) {
     JWT_SECRET
   );
 
-  res.json({
+  return successResponse(res, {
     message: "Login successful",
     token
   });
 }
 
+
 async function getMe(req, res) {
+
   const user = await User.findById(req.user.userId);
 
   if (!user) {
-    return res.status(404).json({
-      message: "User not found"
-    });
+    return errorResponse(
+      res,
+      "User not found",
+      404
+    );
   }
 
-  res.json({
+  return successResponse(res, {
     _id: user._id,
     email: user.email
   });
 }
 
+
 module.exports = {
-  signup,
-  login,
-  getMe
+  signup: asyncHandler(signup),
+  login: asyncHandler(login),
+  getMe: asyncHandler(getMe)
 };

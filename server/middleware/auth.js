@@ -1,11 +1,11 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const { env } = require("../config/env");
 
 const {
   errorResponse
 } = require("../utils/response");
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = env.jwtSecret;
 
 function auth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -26,7 +26,7 @@ function auth(req, res, next) {
     req.user = decoded;
 
     next();
-  } catch (error) {
+  } catch {
     return errorResponse(
       res,
       "Invalid token",
