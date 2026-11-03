@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-checks:
+    name: Lint and Test Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    env:
+      NODE_ENV: test
+      PORT: "3000"
+      MONGODB_URI: mongodb://127.0.0.1:27017/ai-basketball-analyzer-test
+      JWT_SECRET: ci-test-secret-not-for-production
+      OPENAI_API_KEY: ci-placeholder-not-a-real-key
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26.13.0
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint and tests
+        run: npm run check
