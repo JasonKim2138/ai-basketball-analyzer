@@ -5548,3 +5548,398 @@ We added automated code-quality checks while keeping all 95 tests passing.
 Continue improving the development workflow and prepare the project for more consistent releases.
 
 --------------------------------------------------------------------------------------
+
+# Day 36 — Continuous Integration (CI)
+
+## 🎯 Goal
+
+Set up **GitHub Actions** to automatically check the backend whenever code is pushed to `main` or a pull request is opened against `main`.
+
+The goal was to make sure the project is tested automatically on GitHub, not just on our local computer.
+
+---
+
+# 1. What Is Continuous Integration?
+
+Continuous Integration (CI) is the practice of automatically checking code changes whenever developers push or submit code.
+
+For our project, CI performs two main checks:
+
+- ESLint checks code quality.
+- Jest runs the backend test suite.
+
+The basic workflow is:
+
+Developer pushes code
+        ↓
+GitHub Actions starts
+        ↓
+Install dependencies
+        ↓
+Run ESLint
+        ↓
+Run Jest tests
+        ↓
+Pass or fail
+
+---
+
+# 2. Created the GitHub Actions Workflow
+
+We created:
+
+.github/
+└── workflows/
+    └── ci.yml
+
+GitHub automatically detects workflow files inside `.github/workflows/`.
+
+Our workflow is named:
+
+name: Backend CI
+
+It runs on two events:
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+This means the backend checks run whenever:
+
+- We push changes to `main`.
+- Someone opens or updates a pull request targeting `main`.
+
+---
+
+# 3. Configured the CI Environment
+
+The workflow uses a GitHub-hosted Ubuntu runner:
+
+runs-on: ubuntu-latest
+
+We configured the working directory:
+
+defaults:
+  run:
+    working-directory: server
+
+This ensures that commands such as `npm ci` and `npm run check` execute inside the backend directory.
+
+We also supplied test environment variables:
+
+env:
+  NODE_ENV: test
+  PORT: "3000"
+  MONGODB_URI: mongodb://127.0.0.1:27017/ai-basketball-analyzer-test
+  JWT_SECRET: ci-test-secret-not-for-production
+  OPENAI_API_KEY: ci-placeholder-not-a-real-key
+
+These are placeholder values for the CI environment, not real production credentials.
+
+---
+
+# 4. Configured Node.js
+
+We used the GitHub Actions setup-node action:
+
+- name: Set up Node.js
+  uses: actions/setup-node@v7
+  with:
+    node-version: 26.13.0
+    cache: npm
+    cache-dependency-path: server/package-lock.json
+
+This provides a consistent Node.js environment for the backend checks.
+
+The npm cache uses the backend's `package-lock.json` to help manage dependency installation efficiently.
+
+---
+
+# 5. The First CI Run Failed
+
+Our first GitHub Actions run showed a red X.
+
+The failure happened during:
+
+npm ci
+
+GitHub reported that `package.json` and `package-lock.json` were not fully in sync.
+
+Specifically, the lockfile was missing:
+
+@emnapi/core@1.11.3
+@emnapi/runtime@1.11.3
+
+This exposed a dependency-lockfile compatibility issue between our local development environment and the Linux environment used by GitHub Actions.
+
+## Important Lesson
+
+A project can work locally but still fail in CI.
+
+That is one reason automated testing on a separate environment is valuable.
+
+---
+
+# 6. Fixed the Lockfile
+
+Our local npm version was:
+
+npm 11.6.2
+
+We used npm `11.21.1` to update the lockfile:
+
+npx --yes npm@11.21.1 install
+
+This added the missing optional dependency entries.
+
+We inspected the changes:
+
+git diff --stat
+git diff -- package-lock.json
+
+The updated lockfile included:
+
+@emnapi/core@1.11.3
+@emnapi/runtime@1.11.3
+
+We then tested a clean installation:
+
+npx --yes npm@11.21.1 ci
+
+The installation succeeded:
+
+added 459 packages
+
+This confirmed that the updated lockfile could support a clean install locally.
+
+---
+
+# 7. Updated the GitHub Workflow
+
+To make GitHub use the same npm version, we changed the dependency installation step.
+
+Before:
+
+- name: Install dependencies
+  run: npm ci
+
+After:
+
+- name: Install dependencies
+  run: npx --yes npm@11.21.1 ci
+
+Now GitHub uses npm `11.21.1` when installing dependencies.
+
+This helped resolve the original lockfile installation failure.
+
+---
+
+# 8. Tested the Backend Locally
+
+After the clean installation, we ran:
+
+npm run check
+
+Our `package.json` defines this command as:
+
+"check": "npm run lint && npm test"
+
+That means it runs ESLint first and Jest second.
+
+### Results
+
+- ✅ ESLint passed.
+- ✅ All 5 Jest test suites passed.
+- ✅ All 95 tests passed.
+- ✅ No snapshots failed.
+
+Some tests intentionally generated error logs while testing error handling. Those logs did not represent test failures.
+
+We also verified that bcrypt still worked after the clean install:
+
+bcrypt works
+
+---
+
+# 9. Pushed the Fixes to GitHub
+
+We staged both updated files:
+
+git add package-lock.json ../.github/workflows/ci.yml
+
+We checked for whitespace errors:
+
+git diff --cached --check
+
+Then committed:
+
+git commit -m "Fix CI lockfile compatibility"
+
+Finally, pushed:
+
+git push origin main
+
+The commit was:
+
+733ae61
+
+It contained changes to:
+
+- `server/package-lock.json`
+- `.github/workflows/ci.yml`
+
+---
+
+# 10. Final GitHub Actions Result
+
+<badge color="success">CI Passed</badge>
+
+The second GitHub Actions run completed successfully.
+
+The workflow was:
+
+| Step | Result |
+|---|---|
+| Checkout repository | ✅ Passed |
+| Set up Node.js | ✅ Passed |
+| Install dependencies | ✅ Passed |
+| Run lint and tests | ✅ Passed |
+
+The first run failed during dependency installation. After updating the lockfile and npm version, the second run passed.
+
+---
+
+# 11. Final CI Workflow
+
+Our final workflow is:
+
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-checks:
+    name: Lint and Test Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    env:
+      NODE_ENV: test
+      PORT: "3000"
+      MONGODB_URI: mongodb://127.0.0.1:27017/ai-basketball-analyzer-test
+      JWT_SECRET: ci-test-secret-not-for-production
+      OPENAI_API_KEY: ci-placeholder-not-a-real-key
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26.13.0
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npx --yes npm@11.21.1 ci
+
+      - name: Run lint and tests
+        run: npm run check
+
+---
+
+# 🧠 Concepts Learned
+
+### Continuous Integration
+
+Automatically checking code after pushes and pull requests.
+
+### GitHub Actions
+
+A GitHub feature that runs automated workflows.
+
+### Workflow files
+
+YAML files stored inside `.github/workflows/`.
+
+### CI runners
+
+GitHub-hosted environments that execute our workflow.
+
+### `npm ci` vs. `npm install`
+
+`npm ci` performs a clean installation using the lockfile. It is designed for automated environments where reproducible dependency installation matters.
+
+### Package lockfiles
+
+The lockfile records the dependency versions and metadata needed to install the project consistently.
+
+### Cross-platform development
+
+Code and dependencies should be tested in environments beyond the developer's own computer.
+
+### CI troubleshooting
+
+A failed pipeline is useful feedback. We identified the failing step, investigated the lockfile, made a targeted fix, and verified the result.
+
+---
+
+# 🎯 Day 36 Result
+
+Our backend now has an automated CI pipeline.
+
+Code pushed to GitHub
+        ↓
+GitHub Actions
+        ↓
+Install dependencies
+        ↓
+ESLint
+        ↓
+Jest
+        ↓
+<success>All checks passed</success>
+
+The project is now more than a locally tested application.
+
+It has an automated quality-checking process that runs whenever changes are pushed to GitHub or submitted through a pull request.
+
+**Software Engineering + Testing + Automation**
+
+---
+
+# 🚀 Day 37 Preview
+
+## Main Topic: Continuous Delivery and Deployment
+
+Now that we have Continuous Integration working, the next step is to understand what happens after the code passes its checks.
+
+We'll explore:
+
+- The difference between CI, Continuous Delivery, and Continuous Deployment
+- How to prepare an application for deployment
+- How environment variables work in production
+- How to choose a backend hosting platform
+- How to deploy the Express backend
+- How to verify that the deployed API works
+
+### Starting question
+
+> **"Now that GitHub automatically tests our code, how do we get the application running on the internet?"**
+
+--------------------------------------------------------------------------------------
