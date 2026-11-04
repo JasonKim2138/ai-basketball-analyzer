@@ -5943,3 +5943,24 @@ We'll explore:
 > **"Now that GitHub automatically tests our code, how do we get the application running on the internet?"**
 
 --------------------------------------------------------------------------------------
+
+# Day 37 – Continuous Delivery & Deployment
+
+### What I Learned
+- Understood the differences between Continuous Integration (CI), Continuous Delivery (CD), and Continuous Deployment.
+- Learned how to prepare a full-stack application for production.
+- Learned the difference between local and production environment variables.
+- Understood why the frontend and backend need separate deployment configurations.
+- Learned how CORS allows the frontend to communicate with the backend.
+- Deployed the Express backend and React + Vite frontend using Render.
+- Connected the deployed backend to MongoDB Atlas.
+
+### What I Practiced
+- Configured production API URLs and environment variables.
+- Set up CORS for the deployed frontend.
+- Deployed the backend as a Render Web Service.
+- Deployed the frontend as a Render Static Site.
+- Tested user registration, login, and basketball player analysis on the live website.
+
+### Key Takeaway
+Successfully deployed my AI Basketball Analyzer as a full-stack application and verified that the frontend, backend, authentication system, and database work together in production.
