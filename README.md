@@ -5964,3 +5964,133 @@ We'll explore:
 
 ### Key Takeaway
 Successfully deployed my AI Basketball Analyzer as a full-stack application and verified that the frontend, backend, authentication system, and database work together in production.
+
+--------------------------------------------------------------------------------------
+
+# Day 38 — Production Testing & Reliability
+
+## Goal
+Test the deployed AI Basketball Analyzer and verify that the backend handles authentication, user data, validation, and errors correctly.
+
+## 1. Invalid Login Testing
+- Tested login using a valid email and incorrect password.
+- Confirmed the frontend displays an appropriate error message:
+  - `Invalid email or password`
+- Verified that incorrect credentials do not allow login.
+
+## 2. Protected API Route Testing
+- Tested the protected `GET /auth/me` endpoint.
+- Confirmed that requests without an authentication token are rejected.
+- Logged in and refreshed the profile page.
+- Verified the frontend successfully received a `200 OK` response from `/auth/me`.
+
+## 3. User Data Isolation
+- Logged in as User A and created a player analysis record.
+- Logged out and logged in as User B.
+- Confirmed User B could not see User A's saved records.
+- Created a separate record for User B.
+- Logged back in as User A and confirmed the original record was still available.
+
+## 4. Player Data Validation
+
+Reviewed and improved:
+
+`server/validators/playerValidator.js`
+
+Updated the stat validation logic:
+
+function isInvalidStat(value) {
+  return !Number.isFinite(value) || value < 0;
+}
+
+This validation rejects:
+- Negative numbers
+- String values
+- `NaN`
+- `Infinity`
+
+It accepts:
+- Zero
+- Valid finite positive numbers
+
+Created:
+
+`server/__test__/playerValidator.test.js`
+
+Added tests for:
+- Valid player data
+- Negative points, assists, and rebounds
+- String stat values
+- Empty and whitespace-only player names
+- Zero stat values
+- `NaN` values
+
+## 5. Backend Logging & Error Handling
+
+Reviewed:
+
+- `server/middleware/errorHandler.js`
+- `server/utils/response.js`
+- `server/server.js`
+- `server/app.js`
+
+Verified:
+- Backend errors are logged for debugging.
+- Mongoose `CastError` returns a `400 Bad Request`.
+- Unexpected errors return a generic `500 Internal Server Error`.
+- Consistent JSON response structures are used.
+- Error-handling middleware is registered after the application routes.
+- Database connection completes before the server starts listening.
+
+## 6. Browser Developer Tools & Network Inspection
+
+Used Chrome DevTools → Network → Fetch/XHR to inspect production API requests.
+
+Verified the player history request:
+
+Request URL:
+https://ai-basketball-analyzer.onrender.com/player
+
+Request Method:
+GET
+
+Status Code:
+200 OK
+
+Inspected the response and confirmed the backend returns player history as JSON.
+
+Also checked the Request Headers and confirmed the `Authorization` header is present.
+
+This verifies that the frontend attaches authentication information when requesting protected player data.
+
+## 7. Automated Quality Checks
+
+Ran the following command from the `server` directory:
+
+npm run check
+
+Results:
+
+ESLint: Passed
+
+Test Suites: 6 passed, 6 total
+Tests:       103 passed, 103 total
+
+## What I Learned
+
+- How to test authentication and protected API routes in production.
+- Why user data isolation is important for application security.
+- How backend validation prevents invalid data from entering the database.
+- How to write unit tests for validation logic.
+- How Express error-handling middleware works.
+- How to inspect HTTP requests, response bodies, status codes, and request headers using Chrome DevTools.
+- How JWT authentication information is sent through the `Authorization` header.
+- Why automated testing and production testing are both important.
+
+## Day 38 Completion
+
+Successfully completed production testing and reliability checks for the AI Basketball Analyzer.
+
+The deployed application passed the tested authentication, data isolation, validation, and API request checks. All 103 backend tests passed, and ESLint reported no issues.
+
+--------------------------------------------------------------------------------------

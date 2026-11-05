@@ -1,5 +1,5 @@
 function isInvalidStat(value) {
-  return typeof value !== "number" || value < 0;
+  return !Number.isFinite(value) || value < 0;
 }
 
 function isInvalidName(name) {
