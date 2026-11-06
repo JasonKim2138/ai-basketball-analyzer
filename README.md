@@ -6094,3 +6094,216 @@ Successfully completed production testing and reliability checks for the AI Bask
 The deployed application passed the tested authentication, data isolation, validation, and API request checks. All 103 backend tests passed, and ESLint reported no issues.
 
 --------------------------------------------------------------------------------------
+
+# Day 39 – Backend Architecture & Code Quality
+
+## Goal
+Review and improve the backend architecture, understand how different backend layers work together, improve centralized error handling, and verify code quality through automated testing.
+
+## 1. Service Layer Review
+
+Reviewed `services/playerService.js`.
+
+Learned:
+- The service layer handles database operations and business logic.
+- `createPlayer()` creates a new player analysis and saves it to MongoDB.
+- `getPlayers()` retrieves player records with optional filters.
+- `deletePlayer()` deletes a player's record while checking ownership.
+- `updatePlayer()` updates player information and reruns the basketball analysis.
+
+**Important concept:**
+When player statistics change, the analysis must be recalculated so the grade, score, strengths, and weaknesses do not become outdated.
+
+## 2. Basketball Analysis Service
+
+Reviewed `services/playerAnalysisService.js`.
+
+Learned:
+- Rule-based analysis calculates player performance using predefined JavaScript rules.
+- Performance categories include scoring, playmaking, and rebounding.
+- The service calculates overall scores, grades, player roles, strengths, weaknesses, and milestones.
+- `analyzePlayerWithAI()` combines rule-based analysis with AI-generated analysis.
+
+**Important concept:**
+Rule-based analysis provides consistent results, while AI provides additional natural-language basketball insights.
+
+## 3. AI Service & Error Fallback
+
+Reviewed `services/aiService.js`.
+
+Learned:
+- The backend communicates with OpenAI through the API.
+- The API key stays on the backend and is loaded from environment configuration.
+- JSON Schema ensures the AI response follows a predictable structure.
+- `try/catch` handles API failures.
+- If AI analysis fails, the service returns fallback data with `aiAvailable: false`.
+
+**Important concept:**
+The application can still provide rule-based basketball analysis even when AI is unavailable.
+
+## 4. Controller Layer
+
+Reviewed `controllers/playerController.js`.
+
+Learned:
+- Controllers handle incoming HTTP requests and outgoing HTTP responses.
+- Controllers extract request information such as `req.body`, `req.params`, `req.query`, and `req.user`.
+- Controllers call the appropriate service functions.
+- Controllers determine HTTP status codes and response formats.
+
+**Important concept:**
+Controllers handle HTTP-related responsibilities, while services handle business logic and database operations.
+
+## 5. Input Validation
+
+Reviewed `validators/playerValidator.js`.
+
+Learned:
+- `validatePlayer()` checks all required fields when creating a player.
+- `validatePlayerUpdate()` checks fields provided during an update.
+- `Number.isFinite()` prevents invalid numerical values.
+- Negative statistics are rejected.
+- Zero is a valid statistic.
+- Checking `!== undefined` is important because zero is falsy in JavaScript but still valid.
+
+**Important concept:**
+Validation protects the backend from invalid incoming data.
+
+## 6. Centralized Error Handling
+
+Reviewed `middleware/errorHandler.js`.
+
+Improved error handling by adding support for MongoDB duplicate-key errors.
+
+| Error | HTTP Status |
+|---|---:|
+| Mongoose CastError | 400 Bad Request |
+| MongoDB duplicate-key error (`11000`) | 409 Conflict |
+| Unexpected server error | 500 Internal Server Error |
+
+Added:
+
+if (err.code === 11000) {
+  return errorResponse(
+    res,
+    "A record with this value already exists",
+    409
+  );
+}
+
+**Important concept:**
+Centralized error handling keeps error responses consistent and prevents repetitive error-handling logic across controllers.
+
+## 7. Automated Error Handling Test
+
+Updated `__test__/app.test.js`.
+
+Added a test that simulates a MongoDB duplicate-key error:
+
+test("should return 409 when a duplicate-key error occurs", async () => {
+  const token = jwt.sign(
+    { userId: "user123" },
+    process.env.JWT_SECRET
+  );
+
+  const error = new Error("Duplicate key");
+  error.code = 11000;
+
+  updatePlayer.mockRejectedValue(error);
+
+  const response = await request(app)
+    .put("/player/player123")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ points: 30 });
+
+  expect(response.statusCode).toBe(409);
+  expect(response.body.message).toBe(
+    "A record with this value already exists"
+  );
+});
+
+Also identified and removed a duplicate test for the player-not-found scenario.
+
+## 8. Async Error Handling
+
+Reviewed `utils/asyncHandler.js`.
+
+Learned:
+- `asyncHandler()` wraps asynchronous controller functions.
+- `Promise.resolve()` creates a Promise chain for executing the controller.
+- `.catch(next)` forwards rejected Promises and errors to Express's centralized error handler.
+
+**Important concept:**
+Asynchronous errors should be forwarded to Express instead of being left unhandled.
+
+## 9. Express Application Configuration
+
+Reviewed `app.js`.
+
+Learned:
+- `cors()` configures which frontend origins can access the backend.
+- `express.json()` parses incoming JSON request bodies.
+- Routes are registered separately for authentication and player operations.
+- The centralized error handler is registered after the routes.
+
+**Important concept:**
+Express processes middleware and routes in registration order. Error-handling middleware must be available to receive errors forwarded by routes.
+
+## 10. Server Startup
+
+Reviewed `server.js`.
+
+Learned:
+- `validateEnv()` checks required environment variables.
+- `require("./app")` loads the Express application.
+- `await connectDB()` waits for MongoDB to connect.
+- `app.listen()` starts the HTTP server.
+- `process.exit(1)` terminates the process if startup fails.
+
+**Important concept:**
+The application should establish its database connection successfully before accepting HTTP requests.
+
+## 11. Database Connection
+
+Reviewed `config/db.js`.
+
+Learned:
+- Mongoose connects to MongoDB using `mongoose.connect()`.
+- `mongoose.connection.db.admin().command({ ping: 1 })` checks whether MongoDB is responding.
+- Connection errors propagate to `startServer()` in `server.js`.
+
+**Important concept:**
+Database connection logic and server startup logic are separate responsibilities.
+
+## 12. Final Code Quality Check
+
+Ran the following command from the `server` directory:
+
+npm run check
+
+Results:
+- ESLint: Passed
+- Jest: All tests passed
+- No failing tests
+
+## Key Concepts Learned
+
+1. Separation of concerns
+2. Single responsibility principle
+3. Service-controller architecture
+4. Rule-based analysis vs. AI-generated analysis
+5. Graceful error handling and fallback behavior
+6. Centralized Express error handling
+7. HTTP status codes: 400, 409, and 500
+8. Asynchronous JavaScript and Promises
+9. Database connection management
+10. Unit testing and integration testing
+11. Code quality with ESLint
+
+## Day 39 Result
+
+Successfully reviewed the backend architecture, improved centralized error handling, added a duplicate-key error test, and verified that all automated checks pass.
+
+**Status: Completed**
+
+--------------------------------------------------------------------------------------

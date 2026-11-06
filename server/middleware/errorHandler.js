@@ -17,6 +17,14 @@ function errorHandler(err, req, res, _next) {
 
   }
 
+  if (err.code === 11000) {
+    return errorResponse(
+      res,
+      "A record with this value already exists",
+      409
+    );
+  }
+
   return errorResponse(
     res,
     "Internal server error",

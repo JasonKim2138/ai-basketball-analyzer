@@ -516,4 +516,26 @@ describe("PUT /player/:id", () => {
         });
 
     });
+
+    test("should return 409 when a duplicate-key error occurs", async () => {
+        const token = jwt.sign(
+            { userId: "user123" },
+            process.env.JWT_SECRET
+        );
+
+        const error = new Error("Duplicate key");
+        error.code = 11000;
+
+        updatePlayer.mockRejectedValue(error);
+
+        const response = await request(app)
+            .put("/player/player123")
+            .set("Authorization", `Bearer ${token}`)
+            .send({ points: 30 });
+
+        expect(response.statusCode).toBe(409);
+        expect(response.body.message).toBe(
+            "A record with this value already exists"
+        );
+    });
 });
