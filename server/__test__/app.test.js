@@ -324,6 +324,38 @@ describe("DELETE /player/:id", () => {
         });
 
     });
+
+
+    test("should not allow a user to delete another user's player", async () => {
+
+        const token = jwt.sign(
+            {
+                userId: "otherUser456"
+            },
+            process.env.JWT_SECRET
+        );
+
+        // Simulate MongoDB finding no matching player
+        // because the authenticated user is not the owner.
+        deletePlayer.mockResolvedValue(null);
+
+        const response = await request(app)
+            .delete("/player/player123")
+            .set("Authorization", `Bearer ${token}`);
+
+        expect(response.statusCode).toBe(404);
+
+        expect(deletePlayer).toHaveBeenCalledWith(
+            "player123",
+            "otherUser456"
+        );
+
+        expect(response.body.message).toBe(
+            "Analysis not found"
+        );
+
+    });
+
 });
 
 describe("PUT /player/:id", () => {
@@ -379,6 +411,44 @@ describe("PUT /player/:id", () => {
         });
 
     });
+
+
+    test("should not allow a user to update another user's player", async () => {
+
+        const token = jwt.sign(
+            {
+                userId: "otherUser456"
+            },
+            process.env.JWT_SECRET
+        );
+
+        updatePlayer.mockResolvedValue({
+            notFound: true
+        });
+
+        const response = await request(app)
+            .put("/player/player123")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                points: 50
+            });
+
+        expect(response.statusCode).toBe(404);
+
+        expect(updatePlayer).toHaveBeenCalledWith(
+            "player123",
+            "otherUser456",
+            {
+                points: 50
+            }
+        );
+
+        expect(response.body.message).toBe(
+            "Player not found"
+        );
+
+    });
+
 
     test("should return 404 when the player is not found", async () => {
 

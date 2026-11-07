@@ -26,6 +26,14 @@ async function signup(req, res) {
     );
   }
 
+  if (password.length < 8) {
+    return errorResponse(
+      res,
+      "Password must be at least 8 characters",
+      400
+    );
+  }
+
   const normalizedEmail = email.toLowerCase();
 
   const existingUser = await User.findOne({
@@ -99,7 +107,10 @@ async function login(req, res) {
     {
       userId: user._id
     },
-    JWT_SECRET
+    JWT_SECRET,
+    {
+      expiresIn: "1d"
+    }
   );
 
   return successResponse(res, {

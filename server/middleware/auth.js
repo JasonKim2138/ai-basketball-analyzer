@@ -18,7 +18,15 @@ function auth(req, res, next) {
     );
   }
 
-  const token = authHeader.split(" ")[1];
+  const [scheme, token] = authHeader.split(" ");
+
+  if (scheme !== "Bearer" || !token) {
+    return errorResponse(
+      res,
+      "Invalid authorization format",
+      401
+    );
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);

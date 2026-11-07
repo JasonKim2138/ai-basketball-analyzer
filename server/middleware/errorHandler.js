@@ -25,6 +25,14 @@ function errorHandler(err, req, res, _next) {
     );
   }
 
+  if (err.name === "ValidationError") {
+    return errorResponse(
+      res,
+      err.message,
+      400
+    );
+  }
+
   return errorResponse(
     res,
     "Internal server error",
