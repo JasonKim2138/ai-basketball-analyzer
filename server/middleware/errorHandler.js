@@ -5,6 +5,13 @@ const {
 
 function errorHandler(err, req, res, _next) {
 
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({
+      success: false,
+      message: "Request body is too large"
+    });
+  }
+
   console.error("🔥 ERROR:", err);
 
   if (err.name === "CastError") {
@@ -28,7 +35,7 @@ function errorHandler(err, req, res, _next) {
   if (err.name === "ValidationError") {
     return errorResponse(
       res,
-      err.message,
+      "Invalid data provided",
       400
     );
   }

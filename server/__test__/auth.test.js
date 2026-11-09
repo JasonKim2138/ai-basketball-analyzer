@@ -105,6 +105,19 @@ describe("POST /auth/signup", () => {
 
     });
 
+    test("should reject an object as email", async () => {
+
+        const response = await request(app)
+            .post("/auth/signup")
+            .send({
+            email: { $ne: null },
+            password: "password123"
+            });
+
+        expect(response.statusCode).toBe(400);
+
+    });
+
 });
 
 describe("POST /auth/login", () => {
@@ -200,6 +213,19 @@ describe("POST /auth/login", () => {
         expect(decoded.userId).toBe("user123");
 
         expect(decoded.exp).toBeDefined();
+    });
+
+    test("should reject an object as email", async () => {
+
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+            email: { $ne: null },
+            password: "password123"
+            });
+
+        expect(response.statusCode).toBe(400);
+
     });
 
 });

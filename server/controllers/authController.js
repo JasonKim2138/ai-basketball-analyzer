@@ -12,27 +12,39 @@ const {
   errorResponse
 } = require("../utils/response");
 
+const {
+  validateSignup,
+  validateLogin
+} = require("../validators/authValidator");
+
 
 async function signup(req, res) {
 
+  const errors = validateSignup(req.body);
+
+  if (Object.keys(errors).length > 0) {
+
+    if (!req.body.email || !req.body.password) {
+      return errorResponse(
+        res,
+        "Email and password are required",
+        400
+      );
+    }
+
+    if (errors.password) {
+      return errorResponse(
+        res,
+        "Password must be at least 8 characters",
+        400
+      );
+    }
+
+    return errorResponse(res, errors, 400);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
-
-  if (!email || !password) {
-    return errorResponse(
-      res,
-      "Email and password are required",
-      400
-    );
-  }
-
-  if (password.length < 8) {
-    return errorResponse(
-      res,
-      "Password must be at least 8 characters",
-      400
-    );
-  }
 
   const normalizedEmail = email.toLowerCase();
 
@@ -65,16 +77,18 @@ async function signup(req, res) {
 
 async function login(req, res) {
 
-  const email = req.body.email;
-  const password = req.body.password;
+  const errors = validateLogin(req.body);
 
-  if (!email || !password) {
+  if (Object.keys(errors).length > 0) {
     return errorResponse(
       res,
-      "Email and password are required",
+      errors,
       400
     );
   }
+
+  const email = req.body.email;
+  const password = req.body.password;
 
   const normalizedEmail = email.toLowerCase();
 

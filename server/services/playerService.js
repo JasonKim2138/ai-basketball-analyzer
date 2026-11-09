@@ -10,11 +10,16 @@ const {
 
 async function createPlayer(playerData, userId) {
 
-  const analysis = await analyzePlayerWithAI(playerData);
+  const cleanPlayerData = {
+    ...playerData,
+    name: playerData.name.trim()
+  };
+
+  const analysis = await analyzePlayerWithAI(cleanPlayerData);
 
   const newPlayer = new Player({
     ...analysis,
-    player: playerData,
+    player: cleanPlayerData,
     userId
   });
 

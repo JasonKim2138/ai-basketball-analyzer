@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+mongoose.set("sanitizeFilter", true);
+
 const { env } = require("./env");
 
 async function connectDB() {

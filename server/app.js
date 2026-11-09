@@ -1,12 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 
+const helmet = require("helmet");
+
 const authRoutes = require("./routes/authRoutes");
 const playerRoutes = require("./routes/playerRoutes");
 
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
+
+app.use(helmet());
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -19,7 +23,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
 
 const {
   successResponse

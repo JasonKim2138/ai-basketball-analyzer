@@ -42,10 +42,15 @@ describe("createPlayer", () => {
   test("should analyze and save a player", async () => {
 
     const playerData = {
-      name: "Jason",
+      name: " Jason ",
       points: 30,
       assists: 8,
       rebounds: 10
+    };
+
+    const cleanPlayerData = {
+      ...playerData,
+      name: "Jason"
     };
 
     const userId = "user123";
@@ -81,19 +86,19 @@ describe("createPlayer", () => {
     );
 
     expect(analyzePlayerWithAI)
-      .toHaveBeenCalledWith(playerData);
+      .toHaveBeenCalledWith(cleanPlayerData);
 
     expect(Player)
       .toHaveBeenCalledWith({
         ...analysis,
-        player: playerData,
+        player: cleanPlayerData,
         userId
       });
 
     expect(result).toEqual({
       _id: "player123",
       ...analysis,
-      player: playerData,
+      player: cleanPlayerData,
       userId
     });
 

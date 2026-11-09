@@ -23,21 +23,86 @@ beforeEach(() => {
 
 describe("GET /", () => {
 
-  test("should return the API health message", async () => {
+    test("should return the API health message", async () => {
 
-    const response = await request(app)
-      .get("/");
+        const response = await request(app)
+        .get("/");
 
-    expect(response.statusCode).toBe(200);
+        expect(response.statusCode).toBe(200);
 
-    expect(response.body).toEqual({
-        success: true,
-        data: {
-            message: "AI Basketball Backend Running 🏀"
-        }
+        expect(response.body).toEqual({
+            success: true,
+            data: {
+                message: "AI Basketball Backend Running 🏀"
+            }
+        });
+
     });
 
-  });
+    test("should include Helmet security headers", async () => {
+        const response = await request(app).get("/");
+
+        expect(response.headers["x-content-type-options"]).toBe("nosniff");
+
+        expect(response.headers["x-frame-options"]).toBe("SAMEORIGIN");
+
+        expect(response.headers["x-dns-prefetch-control"]).toBe("off");
+
+        expect(response.headers["x-download-options"]).toBe("noopen");
+
+        expect(response.headers["x-permitted-cross-domain-policies"]).toBe("none");
+
+        expect(response.headers["referrer-policy"]).toBe("no-referrer");
+    });
+
+    test("should allow requests from the local frontend", async () => {
+
+        const response = await request(app)
+            .get("/")
+            .set("Origin", "http://localhost:5173");
+
+        expect(response.headers["access-control-allow-origin"])
+            .toBe("http://localhost:5173");
+
+    });
+
+        test("should not allow requests from unauthorized origins", async () => {
+
+        const response = await request(app)
+            .get("/")
+            .set("Origin", "https://malicious-example.com");
+
+        expect(response.headers["access-control-allow-origin"])
+            .toBeUndefined();
+
+    });
+
+    test("should allow CORS preflight requests", async () => {
+
+        const response = await request(app)
+            .options("/")
+            .set("Origin", "http://localhost:5173")
+            .set("Access-Control-Request-Method", "GET");
+
+        expect(response.status).toBe(204);
+
+        expect(response.headers["access-control-allow-origin"])
+            .toBe("http://localhost:5173");
+
+    });
+
+    test("should reject JSON requests larger than 10kb", async () => {
+
+        const response = await request(app)
+        .post("/auth/signup")
+        .send({
+            email: "a".repeat(15 * 1024),
+            password: "Password123!"
+        });
+
+        expect(response.status).toBe(413);
+
+    });
 
 });
 
