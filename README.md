@@ -6383,3 +6383,269 @@ Improved MongoDB connection management:
 Successfully improved the AI Basketball Analyzer backend architecture, error handling, validation, database initialization, AI integration, and automated test coverage.
 
 --------------------------------------------------------------------------------------
+
+# Day 41 — Backend Security & Input Validation 🔐
+
+## 🎯 Goal
+
+Improve the security and reliability of the AI Basketball Analyzer backend by adding stronger HTTP security headers, restricting frontend access through CORS, validating incoming data, limiting request body sizes, and handling errors safely.
+
+The goal was to make the backend more secure and predictable before handling real production traffic.
+
+---
+
+## 1. Add Helmet for HTTP Security Headers
+
+Installed and configured **Helmet** to add security-related HTTP headers to backend responses.
+
+**File:** `server/app.js`
+
+const helmet = require("helmet");
+
+app.use(helmet());
+
+Helmet helps protect the application by setting headers that reduce exposure to common web vulnerabilities.
+
+Examples of headers tested:
+
+- `X-Content-Type-Options`
+- `X-Frame-Options`
+- `Referrer-Policy`
+- `X-DNS-Prefetch-Control`
+
+Added automated tests to verify that these headers are included in responses.
+
+---
+
+## 2. Restrict CORS to Authorized Frontend Origins
+
+Updated the CORS configuration so that only the local development frontend and the configured production frontend are allowed.
+
+**File:** `server/app.js`
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: allowedOrigins
+  })
+);
+
+The production frontend URL is stored in the backend environment variables:
+
+CLIENT_URL=https://ai-basketball-analyzer-frontend.onrender.com
+
+### What I learned
+
+- CORS controls which browser origins are allowed to access responses from the backend.
+- The frontend URL should be stored in an environment variable instead of hardcoding the production URL throughout the application.
+- Unauthorized browser origins should not receive an `Access-Control-Allow-Origin` header.
+- CORS is not authentication. It does not prevent requests from tools such as Postman or curl.
+
+### Automated tests
+
+Tested that:
+
+1. The local frontend is allowed.
+2. Unauthorized origins are not allowed.
+3. Valid CORS preflight requests are handled correctly.
+
+---
+
+## 3. Limit JSON Request Body Size
+
+Added a 10 KB request body limit to prevent clients from sending excessively large JSON payloads.
+
+**File:** `server/app.js`
+
+app.use(express.json({ limit: "10kb" }));
+
+### Why this matters
+
+Without a request body limit, clients could send unnecessarily large payloads and consume server resources.
+
+The backend now rejects requests larger than 10 KB.
+
+---
+
+## 4. Handle Large Request Errors (HTTP 413)
+
+Added specific error handling for requests that exceed the JSON body size limit.
+
+**File:** `server/middleware/errorHandler.js`
+
+if (err.type === "entity.too.large") {
+  return res.status(413).json({
+    success: false,
+    message: "Request body is too large"
+  });
+}
+
+### What I learned
+
+HTTP 413 means **Payload Too Large**.
+
+The Express JSON parser generates this error when a request exceeds the configured body size limit.
+
+Instead of returning a generic HTTP 500 error, the backend now responds with the appropriate HTTP 413 status code.
+
+---
+
+## 5. Create Authentication Input Validators
+
+Created a dedicated authentication validator to validate signup and login input before processing authentication logic.
+
+**File:** `server/validators/authValidator.js`
+
+Added automated tests:
+
+**File:** `server/__test__/authValidator.test.js`
+
+The validation process helps ensure that incoming authentication data meets the expected requirements before it reaches the controller.
+
+### Why this matters
+
+- Prevents invalid input from reaching authentication logic.
+- Separates validation logic from controller logic.
+- Makes the application easier to maintain and test.
+- Provides more predictable API behavior.
+
+---
+
+## 6. Improve Player Data Validation
+
+Improved the player creation and update flow to ensure player data is handled consistently.
+
+Updated the player service to trim player names before processing and saving them.
+
+**File:** `server/services/playerService.js`
+
+This prevents unnecessary leading or trailing whitespace from being stored in player records.
+
+Also updated the player service tests to verify the behavior.
+
+---
+
+## 7. Enable Mongoose Filter Sanitization
+
+Added Mongoose filter sanitization to the database configuration.
+
+**File:** `server/config/db.js`
+
+mongoose.set("sanitizeFilter", true);
+
+### What I learned
+
+Mongoose's `sanitizeFilter` option helps protect query filters against certain selector injection patterns.
+
+It adds another layer of protection when working with database queries.
+
+However, it does not replace input validation or properly constructing database queries.
+
+---
+
+## 8. Improve Centralized Error Handling
+
+Updated the centralized error handler to return safer and more consistent error messages.
+
+**File:** `server/middleware/errorHandler.js`
+
+The error handler handles several common database and request errors:
+
+| Error | HTTP Status | Response |
+|---|---:|---|
+| Invalid MongoDB ObjectId | 400 | Invalid player ID |
+| Duplicate database value | 409 | A record with this value already exists |
+| Mongoose validation error | 400 | Invalid data provided |
+| Request body too large | 413 | Request body is too large |
+| Unexpected server error | 500 | Internal server error |
+
+### Why this matters
+
+Returning raw database error messages can expose internal implementation details.
+
+The backend now returns safer messages to clients while retaining server-side error logging for debugging.
+
+---
+
+## 9. Add and Update Automated Security Tests
+
+Expanded the existing Jest test coverage to verify the new security and validation behavior.
+
+Updated or added tests in:
+
+- `server/__test__/app.test.js`
+- `server/__test__/auth.test.js`
+- `server/__test__/authValidator.test.js`
+- `server/__test__/playerService.test.js`
+
+Tests cover:
+
+- Helmet security headers.
+- Authorized and unauthorized CORS origins.
+- CORS preflight requests.
+- Oversized JSON request rejection.
+- Authentication input validation.
+- Player name trimming.
+- Existing authentication and player service behavior.
+
+---
+
+## 10. Run the Complete Backend Checks
+
+Ran the complete backend verification command:
+
+npm run check
+
+This command runs:
+
+npm run lint && npm test
+
+**Results:**
+
+- ESLint passed.
+- Jest tests passed.
+- No test failures.
+
+All checks passed successfully.
+
+---
+
+## 🧠 Main Concepts Learned
+
+| Concept | What I learned |
+|---|---|
+| Helmet | Adds HTTP security headers to Express responses. |
+| CORS | Controls which browser origins can access backend responses. |
+| Environment Variables | Keeps environment-specific configuration outside application code. |
+| Request Body Limit | Prevents excessively large JSON payloads. |
+| HTTP 413 | Indicates that a request payload is too large. |
+| Input Validation | Checks incoming data before processing it. |
+| Mongoose sanitizeFilter | Helps protect database query filters from selector injection patterns. |
+| Centralized Error Handling | Handles errors consistently in one place. |
+| Automated Security Testing | Verifies that security configurations behave as expected. |
+
+---
+
+## 🎯 Final Result
+
+Completed Day 41 by improving backend security, input validation, and error handling.
+
+The backend now includes:
+
+- Helmet security headers.
+- Restricted CORS origins.
+- A 10 KB JSON request body limit.
+- Proper HTTP 413 error handling.
+- Dedicated authentication validators.
+- Improved player data handling.
+- Mongoose filter sanitization.
+- Safer centralized error responses.
+- Expanded automated security tests.
+
+All backend lint and test checks passed.
+
+--------------------------------------------------------------------------------------
